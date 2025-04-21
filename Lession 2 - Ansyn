@@ -1,0 +1,116 @@
+ public static async Task<int> m1()
+ {
+     int count = 0;
+     await Task.Run(() =>
+     {
+         for(int i=1; i<=10; i++)
+         {
+             Console.WriteLine("Method 1");
+             count++;
+         }
+     });
+     return count;
+ }
+ public static void m2()
+ {
+     for(int i=1; i<=5; i++)
+     {
+         Console.WriteLine("Method 2");
+     }
+ }
+ public static void m3(int count)
+ {
+     Console.WriteLine("Method 3 is called");
+     Console.WriteLine($"Total count is: {count}");
+ }
+ public static async Task callMethod()
+ {
+     m2();
+     var count = await m1();
+     m3(count);
+ }
+ 
+ ================================================
+Chương trình minh họa tạo ra phương thức getData dạng Ansyn, trong phương thức này sử dụng delay để tạm dừng chương trình trong 3ms
+Hàm main gọi phương thức getData(), sử dụng await, do vậy luồng chính sẽ phải đợi cho đến khi kết thúc phương thức này.
+
+ using System.Net;
+using System;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading;
+using System.Collections;
+using System.Linq;
+using System.Diagnostics;
+using System.Collections.Concurrent;
+class Program
+{
+
+   
+    static async Task<String> getData()
+    {
+        await Task.Delay(3000);
+        return "Data download completed.";
+    }
+    static void printNumber()
+    {
+        for (int i = 1; i <= 10; i++)
+            Console.Write(i + ", ");
+    }
+    public static async Task Main()
+    {
+        Console.WriteLine("Start download data");
+        string data = await getData();
+
+        Thread t1 = new Thread(printNumber);
+        t1.Start();        
+        Console.WriteLine($"Data Received: {data}");
+     
+
+    }
+}
+
+---------------------------------
+Chương trình minh họa xử lý dữ liệu theo Ansyn, trong khi thực hiện getdata thì luồng chính vẫn hoạt động.
+
+using System.Net;
+using System;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading;
+using System.Collections;
+using System.Linq;
+using System.Diagnostics;
+using System.Collections.Concurrent;
+class Program
+{
+
+   
+    static async Task<String> getData()
+    {
+        await Task.Delay(3000);
+        return "Data download completed.";
+    }
+    static void printNumber()
+    {
+        for (int i = 1; i <= 10; i++)
+            Console.Write(i + ", ");
+    }
+    public static async Task Main()
+    {
+        Console.WriteLine("Start download data");
+        Task<String> fetchData = getData();
+        
+        for(int i=1; i<=5; i++)
+        {
+            Console.WriteLine("Luong chinh dang xu ly du lieu: " + i + ", ");
+            await Task.Delay(100);
+        }
+        
+        string data = await fetchData;
+
+        Console.WriteLine($"Data Received: {data}");
+        Console.ReadKey();
+
+    }
+}
