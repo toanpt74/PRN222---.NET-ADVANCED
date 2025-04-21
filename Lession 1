@@ -1,0 +1,97 @@
+Chương trình mình họa truyền thông qua giao thức UDP giữa Server và Client 
+
+1. Xây dựng chương trình phía Server
+
+using System.Net;
+using System;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading;
+class Program
+{
+    const int listenPort = 11000;
+    const string host = "107.125.112.32";
+    private static void StartListener()
+    {
+        string message = "";
+        UdpClient listener = new UdpClient(listenPort);
+        IPAddress address = IPAddress.Parse(host);
+        IPEndPoint remotePoint = new IPEndPoint(address, listenPort);
+        Console.Title = "UDP Server";
+        try
+        {
+            while (true)
+            {
+                Console.WriteLine("Waitting....");
+                byte[] buffer = listener.Receive(ref remotePoint);
+                message = Encoding.UTF8.GetString(buffer,0, buffer.Length);
+                Console.WriteLine(message);
+            }
+        }
+        catch (Exception ex) { 
+            Console.WriteLine(ex.ToString());
+        }
+        finally { listener.Close(); }
+    }
+
+    public static void Main()
+    {
+        Thread t = new Thread(StartListener);
+        t.Start();
+    }
+
+}
+
+2. Chương trình phía Client
+
+using System.Net;
+using System;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading;
+class Program
+{
+    public static void connectServer(string host, int port)
+    {
+        UdpClient udpClient = new UdpClient();
+        IPAddress address = IPAddress.Parse(host); 
+        IPEndPoint remotePoint = new IPEndPoint(address, port);
+        string mess;
+        int count = 0;
+        bool done = false;
+        Console.Title = "UDP Client";
+        try
+        {
+            Console.WriteLine(new string('*', 40));
+            udpClient.Connect(remotePoint);
+            while (!done)
+            {
+                mess = $"Message: {++count:D2}";
+                byte[] buffer = Encoding.UTF8.GetBytes(mess);
+                udpClient.Send(buffer, buffer.Length);
+                Console.WriteLine($"Send: {mess}");
+                Thread.Sleep(2000);
+                if(count == 10)
+                {
+                    done = true;
+                    Console.WriteLine("Done");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            udpClient.Close();
+        }
+    }
+    public static void Main()
+    {
+        string host = "107.125.112.32";
+        int port = 11000;
+        connectServer(host, port);
+        Console.Read();
+    }
+}
