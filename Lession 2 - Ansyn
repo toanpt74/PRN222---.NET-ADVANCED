@@ -114,3 +114,65 @@ class Program
 
     }
 }
+
+===========================================
+Xây dựng chương trình quản lý công việc bất đồng bộ
+
+1) Tạo lớp UserTask
+
+public class UserTask
+{
+    public string Name {  get; set; }
+    public int Duration { get; set; }
+    public UserTask() { }
+    public UserTask(string name, int duration)
+    {
+        this.Name = name;
+        this.Duration = duration;
+    }
+    public async Task ExecuteAnsyn()
+    {
+        Console.WriteLine($"Start: {Name}");
+        await Task.Delay( Duration );
+        Console.WriteLine($"Task completed: {Name}");
+    }
+}
+
+2) Tao lớp TaskManager
+ public class TaskManager
+ {
+     List<UserTask> tasks = new List<UserTask>();
+     public TaskManager() { }
+     public void AddTask(string name, int d)
+     {
+         UserTask task = new UserTask(name, d);
+         tasks.Add(task);
+         Console.WriteLine($"Task {name} have beed added");
+     }
+
+     public async Task ExecuteAllTaskAnsyn()
+     {
+         List<Task> taskList = new List<Task>();
+         foreach (var task in tasks)
+         {
+             taskList.Add(task.ExecuteAnsyn());
+         }
+         await Task.WhenAll(taskList);
+         Console.WriteLine("All task completed.");
+     }
+
+ }
+ 3) Hàm main
+  public static async Task Main()
+ {
+     var w = Stopwatch.StartNew();
+
+     TaskManager manager = new TaskManager();
+     manager.AddTask("Tim kiem thong tin", 3000);
+     manager.AddTask("Phan tich bao cao",5000);
+     manager.AddTask("Lu du lieu vao he thong", 2000);
+     await manager.ExecuteAllTaskAnsyn();
+     w.Stop();
+     Console.WriteLine($"Total time: {w.ElapsedMilliseconds} ms");
+     
+ }
