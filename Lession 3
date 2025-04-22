@@ -1,0 +1,765 @@
+Nguyên tắc SOLID là một tập hợp các nguyên tắc cơ bản trong thiết kế phần mềm theo hướng đối tượng
+
+NGUYÊN TẮC 1:
+1. S - Single Responsibility Principle: nguyên tắc đơn nhiệm
+Một lớp chỉ nên chứa một chức năng, tránh đưa quá nhiều chức năng vào một lớp => khó khăn trong việc chỉnh sửa và nâng cấp hệ thống
+Điều này tương tự như một dụng cụ đa năng có thể thực hiện được nhiều việc, tuy nhiên nó không thể hiệu quả như các dụng cụ chuyên dụng.
+
+Ví dụ: triển khai ứng dụng cho nguyên tắc này
+
+Tệp BookStore.json
+[
+  {
+    "Title": "Mastering C# and .NET Programming",
+    "Author": "Marino Posadas",
+    "Price": 49.89
+  },
+  {
+    "Title": "Java core Programming",
+    "Author": "Apress",
+    "Price": 33.89
+  }
+]
+----------------
+
+1. Tạo một interface:
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Sample1
+{
+    public interface IBook
+    {
+        string Title { get; set; }
+        string Author {  get; set; }
+        double Price {  get; set; }
+
+    }
+}
+
+2. Tạo lớp Book kế thừa từ Interface này
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Sample1
+{
+    public class Book: IBook
+    {
+        public string Title { get; set; }
+        public string Author { get; set; }
+        public double Price { get; set; }
+    }
+}
+
+3. Chương trình chính
+
+using System.Net;
+using System;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading;
+using System.Collections;
+using System.Linq;
+using System.Diagnostics;
+using System.Collections.Concurrent;
+using Newtonsoft.Json;
+using System.IO;
+using Sample1;
+
+class Program
+{
+
+   
+    
+    public static async Task Main()
+    {
+        string filePath = "D:\\Soft\\Sample1\\Sample1\\BookStore.json";
+        Console.WriteLine("List of books");
+        Console.WriteLine("---------------");
+        string file = File.ReadAllText(filePath);
+
+        List<Book> books = JsonConvert.DeserializeObject<List<Book>>(file); 
+        foreach(var item in books)
+        {
+            Console.WriteLine($"{item.Title.PadRight(39,' ')}" + $"{item.Author.PadRight(15,' ')}" + $"{item.Price}");
+        }
+        Console.WriteLine("Press any key to exit");
+        Console.Read();        
+
+    }
+}
+
+-----------------------------------------------------------------------
+NGUYÊN TẮC 2:
+
+2. O - Open/Closed Principle: nguyên tắc đóng mở.
+Nguyên tắc này giúp chúng ta dễ dàng trong việc mở rộng chương trình và hạn chế thay đổi các code cũ 
++ Open for extention (Mở cho sự mở rộng): dễ dàng mở rộng các module khi yêu cầu hệ thống thay đổi, chúng ta có thể mở rộng các module để đáp ứng các hành vi thay đổi từ yêu cầu của hệ thống
++ Closed for modification (Đóng với sự thay đổi/hiệu chỉnh): Mở rộng module không kéo theo sự thay đổi của mã nguồn
+Trong lập trình OOP, có thể triển khai điều này thông qua các lớp trừu tượng.
+Xây dựng một lớp cha là lớp trừu tượng với các phương thức Trừu tượng, lớp này đóng vai trò Closed, tất cả các lớp con kế thừa đều phải đảm bảo các phương thức từ lớp cha
+
+=> Giúp chúng ta có thể mở rộng các lớp (yêu cầu trong hệ thống) mà không cần chỉnh sửa mã nguồn từ lớp cha.
+Ví dụ: 
+
+1. Tạo lớp trừu tượng
+ public abstract class Shape
+ {
+     public abstract double Area();
+ }
+ 2. Tạo lớp Circle kế thừa từ lớp Shape
+ 
+ public class Circle: Shape
+{
+    private double radius;
+    public double Radius { get; set; }
+    public Circle() { }
+    public Circle(double radius) { this.Radius = radius; }
+    public override double Area()
+    {
+        return Math.PI * Radius * Radius;
+    }
+    public override string ToString() { return "The Circle with Radius: " + Radius; }
+}
+
+3. Tạo lớp Rectangle kế thừa từ lớp Shape
+
+ public class Rectangle: Shape
+ {        
+     private double width, height;
+     public double Width { get; set; }
+     public double Height { get; set; }
+     public Rectangle() { }
+     public Rectangle(double width, double height)
+     {
+         this.Width = width;
+         this.Height = height;
+     }
+     public override double Area()
+     {
+         return Width*Height;
+     }
+     public override string ToString() { return "The Rectangle Width: " + Width + ", Height: " + Height; }
+ }
+ 
+ Chương trình chính sử dụng các lớp:
+ 
+ using System.Net;
+using System;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading;
+using System.Collections;
+using System.Linq;
+using System.Diagnostics;
+using System.Collections.Concurrent;
+using Newtonsoft.Json;
+using System.IO;
+using Sample1;
+
+class Program
+{    
+    public static async Task Main()
+    {
+        List<Shape> shapes = new List<Shape>();
+        Circle circle = new Circle(5);
+        Rectangle rectangle = new Rectangle(4,6);
+        shapes.Add(circle);
+        shapes.Add(rectangle);
+        foreach (Shape shape in shapes)
+        {
+            Console.WriteLine($"Area of shape is: {shape.Area()}");
+        }
+
+    }
+}
+------------------------------
+Ví dụ 2: 
+Thêm tệp tin data json
+[
+  {
+    "Title": "ASP.NET Programming",
+    "Author": "Rajes Gudian",
+    "Price": 35.76
+  },
+  {
+    "Title": "Master in ASP NET CORE",
+    "Author": "Ricardo Aruho",
+    "Price": 25.75
+  }
+]
+
+
+Xây dựng Interface và class Book 
+
+namespace Sample1
+{
+    public interface IBook
+    {
+        string Title { get; set; }
+        string Author {  get; set; }
+        double Price {  get; set; }
+
+    }
+}
+
+2. Tạo lớp Book kế thừa từ Interface này
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Sample1
+{
+    public class Book: IBook
+    {
+        public string Title { get; set; }
+        public string Author { get; set; }
+        public double Price { get; set; }
+    }
+}
+
+Xây dựng lớp Utilities: lớp này với các phương thức ReadAllBooks, và thêm một phương thức mới ReadAllData()
+public class Utilities
+{
+    static string ReadFile(string filename)
+    {
+        return File.ReadAllText(filename);
+    }
+
+    public static List<Book> ReadAllBooks()
+    {
+        string data = ReadFile("D:\\Soft\\Sample1\\Sample1\\BookStore.json");
+        return JsonConvert.DeserializeObject<List<Book>>(data);
+    }
+    public static List<Book> ReadExtraData()
+    {
+        List<Book> books = ReadAllBooks();
+        string data = ReadFile("D:\\Soft\\Sample1\\Sample1\\BookStore_2.json");
+        books.AddRange(JsonConvert.DeserializeObject<List<Book>>(data));
+        return books;
+    }
+}
+
+Chương trình chính:
+using System.Net;
+using System;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading;
+using System.Collections;
+using System.Linq;
+using System.Diagnostics;
+using System.Collections.Concurrent;
+using Newtonsoft.Json;
+using System.IO;
+using Sample1;
+
+class Program
+{
+
+    static List<Book> books = new List<Book>();
+    private static void printBooks()
+    {
+        Console.WriteLine("List of Books");
+        Console.WriteLine("-----------------");
+        foreach (var item in books)
+        {
+            Console.WriteLine($"{item.Title.PadRight(39, ' ')}" + $"{item.Author.PadRight(15, ' ')}" + $"{item.Price}");
+        }
+        
+
+    }
+    public static void Main()
+    {
+        string chon;
+        while (true)
+        {
+            Console.WriteLine("Please choice the funcion");
+            Console.WriteLine("1- List book");
+            Console.WriteLine("2- List Extra book");
+            Console.WriteLine("0- Exit");
+            Console.Write("Please enter (1-2) or press 0 to exit:");
+            
+            chon = Console.ReadLine();
+            if (chon == "0") break;
+            if (chon == "1") books = Utilities.ReadAllBooks();
+            if (chon == "2") books = Utilities.ReadExtraData();
+            printBooks();
+        }   
+
+    }
+}
+
+------------------------------------------
+NGUYÊN TẮC 3:
+
+3. L - Liskov Substitution Principle: nguyên tắc thay thế Liskov
+Các lớp con phải có thể thay thế hoàn toàn lớp cha mà không làm thay đổi hành vi của chương trình.
+
+Ví dụ: 
+class Rectangle{
+	public virtual int Width{get; set;}
+	public virtual int Height{get; set;}
+	public int Area(){
+		return Width* Height;
+	}
+}
+public class Square : Rectangle{
+	public override int Width{
+		set{
+			base.Width = value;
+			base.Height = value;
+		}
+	}
+	public override int Height{
+		set{
+			base.Width = value;
+			base.Height = value;
+		}
+	}
+}
+class Program
+{
+
+     
+    public static void Main()
+    {
+        Rectangle r = new Square();    
+        r.Width = 10;
+        r.Height = 5;
+        Console.WriteLine("Area of Rectangle is: " + r.Area()); //Ket qua sai
+    }
+}
+Việc xây dựng lớp như trên vi phạm nguyên tắc LSP, vì lớp Square đã làm thay đổi hành vi của lớp cha Rectangle. Khi thay đổi Width thì cả Height cũng thay đổi
+
+Ví dụ 2: Xây dựng chương trình thỏa mãn LSP
+1. Xây dựng Interface và class cho Book
+
+namespace Sample1
+{
+    public interface IBook
+    {
+        string Title { get; set; }
+        string Author {  get; set; }
+        double Price {  get; set; }
+
+    }
+}
+
+2. Tạo lớp Book kế thừa từ Interface này
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Sample1
+{
+    public class Book: IBook
+    {
+        public string Title { get; set; }
+        public string Author { get; set; }
+        public double Price { get; set; }
+    }
+}
+
+2. Tạo thêm một lớp TopicBook kế thừa từ lớp Book
+
+namespace Sample1
+{
+    public class TopicBook:Book
+    {
+        public string Topic {  get; set; }
+    }
+}
+
+3. Thay đổi chức năng đọc thông tin trong lớp Utilities.cs
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.IO;
+using Newtonsoft.Json;
+namespace Sample1
+{
+    public class Utilities
+    {
+        static string ReadFile(string filename)
+        {
+            return File.ReadAllText(filename);
+        }
+
+        public static List<Book> ReadAllBooks()
+        {
+            string data = ReadFile("D:\\Soft\\Sample1\\Sample1\\BookStore.json");
+            return JsonConvert.DeserializeObject<List<Book>>(data);
+        }
+        public static List<Book> ReadExtraData()
+        {
+            List<Book> books = ReadAllBooks();
+            string data = ReadFile("D:\\Soft\\Sample1\\Sample1\\BookStore_2.json");
+            books.AddRange(JsonConvert.DeserializeObject<List<Book>>(data));
+            return books;
+        }
+
+        public static List<Book>ReadData(string topic)
+        {
+            List<Book> books = ReadAllBooks();
+            var filename = "D:\\Soft\\Sample1\\Sample1\\BookStore_2.json";
+            string data = File.ReadAllText(filename);
+            books.AddRange(JsonConvert.DeserializeObject<List<Book>>(data));
+            if(topic == "TOPIC")
+            {
+                filename = "D:\\Soft\\Sample1\\Sample1\\BookStore_3.json";
+                data = File.ReadAllText(filename);
+                books.AddRange(JsonConvert.DeserializeObject<List<Book>>(data));
+            }
+            return books;
+        }
+    }
+}
+
+Chương trình chính
+using System.Net;
+using System;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading;
+using System.Collections;
+using System.Linq;
+using System.Diagnostics;
+using System.Collections.Concurrent;
+using Newtonsoft.Json;
+using System.IO;
+using Sample1;
+
+
+ 
+
+class Program
+{
+    static List<Book> books = new List<Book>();
+    private static void printBooks()
+    {
+        Console.WriteLine("List of Books");
+        Console.WriteLine("-----------------");
+        foreach (var item in books)
+        {
+            Console.WriteLine($"{item.Title.PadRight(39, ' ')}" + $"{item.Author.PadRight(15, ' ')}" + $"{item.Price}");
+        }
+    }
+
+    public static void Main()
+    {
+        string chon;
+        while (true)
+        {
+            Console.WriteLine("Please choice the funcion");
+            Console.WriteLine("1- List book");
+            Console.WriteLine("2- List Extra book");
+            Console.WriteLine("2- List book with Topic");
+            Console.WriteLine("0- Exit");
+            Console.Write("Please enter (1-3) or press 0 to exit:");
+
+            chon = Console.ReadLine();
+            if (chon == "0") break;
+            if (chon == "1") books = Utilities.ReadAllBooks();
+            if (chon == "2") books = Utilities.ReadExtraData();
+            if (chon == "3") books = Utilities.ReadData("TOPIC");
+            printBooks();
+        }
+    }
+}
+--------------------------------------------------------------------------------------------------
+NGUYÊN TẮC 4:
+Interface Segregation Principle : Phân tách giao diện
+Một interface lớn nên chia thành các interface nhỏ. Vì tất cả các lớp kế thừa từ interface sẽ phải cài đặt tất cả các phương thức rỗng đã mô tả trong interface,
+Nếu interface chứa quá nhiều phương thức, có thể có các lớp sẽ không bao giờ sử dụng đến các phương thức đó nhưng vẫn phải triển khai
+
+1. Xây dựng các interface độc lập
+ public interface IBook
+ {
+     string Title { get; set; }
+     string Author {  get; set; }
+     double Price {  get; set; }
+
+ }
+  internal interface ITopic
+ {
+     public string Topic {  get; set; }  
+ }
+  internal interface IDuration
+ {
+     public string Duration { get; set; }
+ }
+ 
+ 2. Xây dựng các lớp Book, BookTopic và Video kế thừa từ các Interface
+ 
+  public class Book: IBook
+ {
+     public string Title { get; set; }
+     public string Author { get; set; }
+     public double Price { get; set; }
+ }
+ 
+ public class TopicBook:IBook, ITopic
+{
+   public string Title { get; set; }
+   public string Author { get; set; }
+   public double Price { get; set; }
+    public string Topic { get; set; }
+}
+
+public class Video: IBook, ITopic, IDuration
+{
+    public string Title { get; set; }
+    public string Author { get; set; }
+    public double Price { get; set; }
+    public string Topic { get; set; }
+    public string Duration { get; set; }
+}
+
+3. Xây dựng lớp Utilities.CS
+
+Thêm phương thức
+ public static List<Video> ReadVideo(string fileId)
+ {
+     string path = "D:\\Soft\\Sample1\\Sample1\\";           
+     string filename = path + "BookStore_" + fileId + ".json";
+     string data = File.ReadAllText(filename);
+     return JsonConvert.DeserializeObject<List<Video>>(data);
+
+ }
+ Chương trình chính
+ using System.Net;
+using System;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading;
+using System.Collections;
+using System.Linq;
+using System.Diagnostics;
+using System.Collections.Concurrent;
+using Newtonsoft.Json;
+using System.IO;
+using Sample1;
+
+
+ 
+
+class Program
+{
+    static List<Video> books = new List<Video>();
+    private static void printBooks()
+    {
+        Console.WriteLine("List of Books");
+        Console.WriteLine("-----------------");
+        foreach (var item in books)
+        {
+
+            Console.WriteLine($"{item.Title.PadRight(39, ' ')}" + $"{item.Author.PadRight(15, ' ')}" + $"{item.Price}" 
+                + " " + $"{item.Topic?.PadRight(20,' ')}"+$"{item.Duration??""}");            
+
+        }
+    }
+
+    public static void Main()
+    {
+        string chon;
+        while (true)
+        {
+            Console.WriteLine("Please choice the funcion");
+            Console.WriteLine("1- Book Store 1");
+            Console.WriteLine("2- Book Store 2");
+            Console.WriteLine("3- Book Store 3");
+            Console.WriteLine("0- Exit");
+            Console.Write("Please enter (1-3) or press 0 to exit:");
+
+            chon = Console.ReadLine();
+            if (chon == "0") break;
+            if (chon == "1") books = Utilities.ReadVideo(chon);
+            if (chon == "2") books = Utilities.ReadVideo(chon);
+            if (chon == "3") books = Utilities.ReadVideo(chon);
+            printBooks();
+        }
+    }
+}
+ 
+-------------------------------------------------------------------
+NGUYÊN TẮC 5:
+Dependency Inversion Principle  (Đảo ngược phụ thuộc):
+Các module cấp cao không nên phụ thuộc và các module cấp thấp. Trong lập trình hướng đối tượng các lớp chỉ phụ thuộc và các lớp trừu tượng
+Trong các ngôn ngữ lập trình bậc cao sử dụng Abstract Factory để quản lý các phụ thuộc (dependency) không mong muốn.
+
+Inversion of Control (IoC): đảo ngược điều khiển (kiểm soát)
+Thay vì một lớp trực tiếp khởi tạo và quản lý các đối tượng phụ thuộc, nó sẽ nhận các phụ thuộc từ bên ngoài, thường thông qua Dependency Injection (DI).
+Ví dụ một lớp A gọi một phương thức trừu tượng được triển khai bởi lớp B như vậy A có thể gọi đến B để thực thi (run time), tuy nhiên B vẫn có thể kiểm soát qua interface lúc compile
+
+Ví dụ: Triển khai chương trình đọc dữ liệu từ DB với hai định dạng là Json và XML
+
+Tạo hai tệp database minh họa
+
+[
+  {
+    "ID": "1",
+    "Title": "Jurassic Park",
+    "OscarNominations": "3",
+    "OscarWins": "3"
+  },
+  {
+    "ID": "2",
+    "Title": "Spider-Man",
+    "OscarNominations": "2",
+    "OscarWins": "0"
+  }
+
+]
+
+<Movies>
+	<Movie>
+		<ID>3</ID>
+		<Title>King Kong</Title>
+		<OscarNominations>4</OscarNominations>
+		<OscarWins>3</OscarWins>
+	</Movie>
+	<Movie>
+		<ID>5</ID>
+		<Title>Superman Returns</Title>
+		<OscarNominations>1</OscarNominations>
+		<OscarWins>0</OscarWins>
+	</Movie>
+</Movies>
+
+2. Tạo Interface: giao diện chỉ chứa một phương thức duy nhất là đọc thông tin về các movies và lưu vào một List
+
+  public interface IMovieReader
+  {
+      List<Movie> ReadMovies();
+  }
+3. Tạo class Movie chứa các thông tin cơ bản của movies
+ public class Movie
+ {
+     public string ID { get; set; }
+     public string Title { get; set; }
+     public string OscarNominations { get; set; }
+     public string OscarWins {  get; set; }
+
+
+ }
+4. Tạo lớp đọc dữ liệu từ DB Json, lớp này kế thừa từ Interface
+
+public class JsonMovieReader : IMovieReader
+{
+    static string file = "D:\\Soft\\Sample1\\Sample1\\MoviesDB.json";
+    static List<Movie> movieList = new List<Movie>();
+    public List<Movie> ReadMovies()
+    {           
+        string data = File.ReadAllText(file);
+        movieList = JsonConvert.DeserializeObject<List<Movie>>(data);                        
+        return movieList;
+    }
+}
+5. Tạo lớp đọc dữ liệu từ XML , Lớp này kế thừa từ Interface
+  
+  
+public class XMLMovieReader : IMovieReader
+{
+    static string file = "D:\\Soft\\Sample1\\Sample1\\MoviesDB.xml";
+    static List<Movie> movieList = new List<Movie>();
+    XDocument document = XDocument.Load(file);
+    public List<Movie> ReadMovies()
+    {
+        var movieCollection = (
+            from f in document.Descendants("Movie")
+                select new Movie
+                {
+                    ID = f.Element("ID").Value,
+                    Title = f.Element("Title").Value,
+                    OscarNominations = f.Element("OscarNominations").Value,
+                    OscarWins = f.Element("OscarWins").Value
+                }
+            ).ToList();
+        return movieCollection;
+    }
+}
+6. Tạo lớp Factory
+ public class ReaderFactory
+ {
+     public IMovieReader _IMovieReader { get; }
+     public ReaderFactory(string type)
+     {
+         switch (type)
+         {
+             case "XML":
+                 _IMovieReader = new XMLMovieReader();
+                 break;
+             case "JSON":
+                 _IMovieReader = new JsonMovieReader(); 
+                 break;
+         }
+         
+         
+     }
+ }
+7. Chương trình chính sử dụng các giao diện và các lớp đối tượng
+using System.Net;
+using System;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading;
+using System.Collections;
+using System.Linq;
+using System.Diagnostics;
+using System.Collections.Concurrent;
+using Newtonsoft.Json;
+using System.IO;
+using Sample1;
+
+class Program
+{
+    static IMovieReader _IMovieReader;
+
+    public static void Main()
+    {
+        string chon;
+        while (true)
+        {
+            string fileType = "";
+            Console.WriteLine("Please choice the funcion");
+            Console.WriteLine("1- XML Database");
+            Console.WriteLine("2- JSON Database");
+            
+            Console.WriteLine("0- Exit");
+            Console.Write("Please enter (1-2) or press 0 to exit:");
+
+            chon = Console.ReadLine();
+            if (chon == "0") break;
+            if (chon == "1") fileType = "XML";
+            if (chon == "2") fileType = "JSON";
+            _IMovieReader = new ReaderFactory(fileType)._IMovieReader;
+            var movieCollection = _IMovieReader.ReadMovies();
+
+            foreach (var movie in movieCollection)
+            {
+                Console.WriteLine($"ID: {movie.ID}, Title: {movie.Title}, OscarNominations: {movie.OscarNominations}, OscarWins: {movie.OscarWins}");
+            }
+
+
+        }
+    }
+}
+
+------------------------------------------------------------------------------------------
+NGUYÊN TẮC:
+Dependency Injection 
+
