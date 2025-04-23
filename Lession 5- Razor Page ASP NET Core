@@ -198,4 +198,77 @@ public class EditContactModel : PageModel
         return Page();
     }
 	
-	
+
+11. Thêm chức năng tìm kiếm 
+11.1 Chỉnh sửa lại tệp Contact với phần hiển thị hộp Search
+
+Chú ý: SearchTerm là một đối tượng khai báo trong tệp cs
+
+
+@page
+@model TEST1.Pages.ContactsModel
+@{
+    ViewData["Title"] = "Contact List";
+}
+
+<h2>Contact List</h2>
+
+<form method="get">
+    <label for="search">Search:</label>
+    <input type="text" id="search" name="SearchTerm" value="@Model.SearchTerm" />
+    <button type="submit">Search</button>
+</form>
+<br />
+<table border="1">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Address</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var contact in Model.Contacts)
+        {
+            <tr>
+                <td>@contact.Name</td>
+                <td>@contact.Address</td>
+                <td>
+                    <a asp-page="/EditContact" asp-route-id="@contact.Id">Edit</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-page="/AddContact">Add New Contact</a>
+
+11.2. Cập nhật lại code tệp .CS
+Chú ý:  thêm định dạng:  [BindProperty(SupportsGet =true)] vào trước thuộc tính SearchTerm
+
+
+ public class ContactsModel : PageModel
+ {
+     private readonly ContactService _contactService;
+     public List<Contact> Contacts { get; set; }
+     [BindProperty(SupportsGet =true)]
+     public string SearchTerm {  get; set; } 
+     public ContactsModel(ContactService contactService)
+     {
+         _contactService = contactService;
+     }
+
+     public void OnGet()
+     {
+         string SearchValue = SearchTerm;
+         if (string.IsNullOrEmpty(SearchValue))
+         {
+             Contacts = _contactService.GetContacts();
+         }
+         else
+         {
+             Contacts = _contactService.GetContacts().Where(c => c.Name.Contains(SearchValue,System.StringComparison.OrdinalIgnoreCase)).ToList();
+         }
+     }
+ }
+ 	
