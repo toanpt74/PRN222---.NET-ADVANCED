@@ -1,0 +1,201 @@
+1. Tạo một ứng dụng ASP NET Razor Pages
+2. Tạo một thư mục Models
+3. Thêm lớp mới là Contact
+ public class Contact
+ {
+     public int Id { get; set; }
+     public string Name { get; set; }
+     public string Address { get; set; }
+ }
+ 4. Thêm lớp ContactService với thuộc tính static để lưu trữ dữ liệu
+ + Chú ý đăng ký trong tệp Program.cs
+ builder.Services.AddSingleton<ContactService>();
+ 
+ public class ContactService
+{
+    private readonly List<Contact> _contacts;
+    public ContactService()
+    {
+        // Khởi tạo dữ liệu mẫu
+        _contacts = new List<Contact>
+    {
+        new Contact { Id = 1, Name = "John Doe", Address = "123 Main St" },
+        new Contact { Id = 2, Name = "Jane Smith", Address = "456 High St" }
+    };
+    }
+    public List<Contact> GetContacts()
+    {
+        return _contacts;
+    }
+    public Contact GetContactById(int id)
+    {
+        return _contacts.FirstOrDefault(c => c.Id == id);
+    }
+    public void AddContact(Contact contact)
+    {
+        contact.Id = _contacts.Max(c => c.Id) + 1; // Tự động tăng ID
+        _contacts.Add(contact);
+    }
+    public void UpdateContact(Contact contact)
+    {
+        var existingContact = GetContactById(contact.Id);
+        if (existingContact != null)
+        {
+            existingContact.Name = contact.Name;
+            existingContact.Address = contact.Address;
+        }
+    }
+}
+
+5. Thêm một Page (Kích chuột phải vào Page và chọn Add => Razor Page => Chọn Razor Page Empty), đặt tên là Contacts
++ Chú ý: đối tượng Model.Contacts được khai báo trong tệp .cs tương ứng
+@page
+@model TEST1.Pages.ContactsModel
+@{
+    ViewData["Title"] = "Contact List";
+}
+<h2>Contact List</h2>
+
+<table border="1">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Address</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var contact in Model.Contacts)
+        {
+            <tr>
+                <td>@contact.Name</td>
+                <td>@contact.Address</td>
+                <td>
+                    <a asp-page="/EditContact" asp-route-id="@contact.Id">Edit</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-page="/AddContact">Add New Contact</a>
+
+6. Viết code để lấy dữ liệu từ ContactService trong tệp .cs tương ứng
+public class ContactsModel : PageModel
+{
+    private readonly ContactService _contactService;
+    public List<Contact> Contacts { get; set; }
+    public ContactsModel(ContactService contactService)
+    {
+        _contactService = contactService;
+    }
+
+    public void OnGet()
+    {
+        Contacts = _contactService.GetContacts();
+    }
+}
+
+7. Thêm một page đặt tên là AddContact
+
+Chú ý: đối tượng Contact được khai báo trong tệp .CS tương ứng
+
+@page
+@model TEST1.Pages.AddContactModel
+@{
+    ViewData["Title"] = "Add Contact";
+}
+
+<h2>Add Contact</h2>
+
+<form method="post">
+    <label for="name">Name:</label>
+    <input type="text" id="name" asp-for="Contact.Name" required />
+    <br />
+    <label for="address">Address:</label>
+    <input type="text" id="address" asp-for="Contact.Address" required />
+    <br />
+    <button type="submit">Add Contact</button>
+</form>
+
+8. Viết code trong tệp .CS tương ứng để xử lý dữ liệu và lưu trữ vào List
+
+  public class AddContactModel : PageModel
+  {
+      private readonly ContactService _contactService;
+
+      [BindProperty]
+      public Contact Contact { get; set; }
+      public AddContactModel(ContactService contactService)
+      {
+          _contactService = contactService;
+      }
+
+      public IActionResult OnPost()
+      {
+          if (ModelState.IsValid)
+          {
+              _contactService.AddContact(Contact);
+              return RedirectToPage("/Contacts");
+          }
+
+          return Page();
+      }
+
+      public void OnGet()
+      {
+      }
+  }
+  
+ 9. Thêm trang EditContact
+ 
+Chú ý: Contact.Id được lưu trong đối tượng hidden 
+ @page
+@model TEST1.Pages.EditContactModel
+@{
+    ViewData["Title"] = "Edit Contact";
+}
+
+<h2>Edit Contact</h2>
+
+<form method="post">
+    <input type="hidden" asp-for="Contact.Id" />
+    <label for="name">Name:</label>
+    <input type="text" id="name" asp-for="Contact.Name" required />
+    <br />
+    <label for="address">Address:</label>
+    <input type="text" id="address" asp-for="Contact.Address" required />
+    <br />
+    <button type="submit">Save Changes</button>
+</form>
+
+10. Viết code cho tệp .CS tương ứng để xử lý dữ liệu và cập nhật vào List
+
+public class EditContactModel : PageModel
+{
+    private readonly ContactService _contactService;
+
+    [BindProperty]
+    public Contact Contact { get; set; }
+
+    public EditContactModel(ContactService contactService)
+    {
+        _contactService = contactService;
+    }
+    public void OnGet(int id)
+    {
+        Contact = _contactService.GetContactById(id);
+    }
+
+    public IActionResult OnPost()
+    {
+        if (ModelState.IsValid)
+        {
+            _contactService.UpdateContact(Contact);
+            return RedirectToPage("/Contacts");
+        }
+
+        return Page();
+    }
+	
+	
