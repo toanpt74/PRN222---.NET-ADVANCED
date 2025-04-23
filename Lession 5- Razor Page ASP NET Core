@@ -271,4 +271,268 @@ Chú ý:  thêm định dạng:  [BindProperty(SupportsGet =true)] vào trước
          }
      }
  }
- 	
+
+
+===============================================
+THÊM THÔNG TIN VỚI DẠNG COMBOBOX
+
+============================================
+1. Tạo thêm lớp City
+
+ public class City
+ {
+     public string CityCode { get; set; }
+     public string Name { get; set; }    
+ }
+2. Thay đổi lớp ContactService
+
+namespace TEST1.Models
+{
+    public class ContactService
+    {
+        private readonly List<Contact> _contacts;
+        private readonly List<City> _cities; 
+        public ContactService()
+        {
+            // Khởi tạo dữ liệu mẫu
+            _contacts = new List<Contact>
+        {
+            new Contact { Id = 1, Name = "John Doe", Address = "123 Main St", CityCode="HN" },
+            new Contact { Id = 2, Name = "Jane Smith", Address = "456 High St", CityCode="HY" }
+        };
+            _cities = new List<City>
+            {
+                new City{CityCode ="HN", Name ="Ha Noi"},
+                new City{CityCode ="TPHCM", Name ="Thanh Pho Ho Chi Minh"},
+                new City{CityCode ="HP", Name ="Hai Phong"},
+                new City{CityCode ="HY", Name ="Hung Yen"},
+            };
+        }
+
+        public List<Contact> GetContacts()
+        {
+            return _contacts;
+        }
+
+        public Contact GetContactById(int id)
+        {
+            return _contacts.FirstOrDefault(c => c.Id == id);
+        }
+
+        public void AddContact(Contact contact)
+        {
+            contact.Id = _contacts.Max(c => c.Id) + 1; // Tự động tăng ID
+            _contacts.Add(contact);
+        }
+
+        public void UpdateContact(Contact contact)
+        {
+            var existingContact = GetContactById(contact.Id);
+            if (existingContact != null)
+            {
+                existingContact.Name = contact.Name;
+                existingContact.Address = contact.Address;
+            }
+        }
+
+        public List<City> GetCities()
+        {
+            return _cities;
+        }
+
+    }
+}
+
+3. Điều chỉnh Form AddContact
++ Thêm một đối tượng Combobox, giá trị là Contact.CityCode, hiển thị là Name
+
+
+@page
+@model TEST1.Pages.AddContactModel
+@{
+    ViewData["Title"] = "Add Contact";
+}
+
+<h2>Add Contact</h2>
+
+<form method="post">
+    <label for="name">Name:</label>
+    <input type="text" id="name" asp-for="Contact.Name" required />
+    <br />
+    <label for="address">Address:</label>
+    <input type="text" id="address" asp-for="Contact.Address" required />
+    <br />
+    <label for="City">City:</label>
+    <select id="city" asp-for="Contact.CityCode">
+        <option value="">Select city</option>
+        @foreach(var c in Model.Cities)
+        {
+         <option value="@c.CityCode">@c.Name</option>   
+        }
+    </select>
+    <button type="submit">Add Contact</button>
+</form> 
+
+4. Viết code lại cho tệp .CS tương ứng
+
+ public class AddContactModel : PageModel
+ {
+     private readonly ContactService _contactService;
+
+     [BindProperty]
+     public Contact Contact { get; set; }
+
+     [BindProperty]
+     public List<City> Cities { get; set; }
+
+
+     public AddContactModel(ContactService contactService)
+     {
+         _contactService = contactService;
+     }
+
+     public IActionResult OnPost()
+     {
+         if (ModelState.IsValid)
+         {
+             _contactService.AddContact(Contact);
+             return RedirectToPage("/Contacts");
+         }
+
+         return Page();
+     }
+
+     public void OnGet()
+     {
+         Cities = _contactService.GetCities();
+     }
+ }
+ 
+ 12. Điều chỉnh Form Contact EditContact
+ 
+ @page
+@model TEST1.Pages.EditContactModel
+@{
+    ViewData["Title"] = "Edit Contact";
+}
+
+<h2>Edit Contact</h2>
+
+<form method="post">
+    <input type="hidden" asp-for="Contact.Id" />
+    <label for="name">Name:</label>
+    <input type="text" id="name" asp-for="Contact.Name" required />
+    <br />
+    <label for="address">Address:</label>
+    <input type="text" id="address" asp-for="Contact.Address" required />
+    <br />
+
+    <label for="City">City:</label>
+    <select id="city" asp-for="Contact.CityCode">
+        
+        @foreach (var c in Model.Cities)
+        {
+            if (Model.Contact.CityCode == c.CityCode)
+            {
+                <option value="@c.CityCode" selected )>@c.Name</option>
+            }else{ 
+               <option value="@c.CityCode" ) >@c.Name</option>
+            }
+        }
+    </select>
+    <br />
+
+    <button type="submit">Save Changes</button>
+</form>
+
+13. Viết code tương ứng cho tệp CS
+
+public class EditContactModel : PageModel
+{
+    private readonly ContactService _contactService;
+
+    [BindProperty]
+    public Contact Contact { get; set; }
+
+    [BindProperty]
+    public List<City> Cities { get; set; }
+
+    public EditContactModel(ContactService contactService)
+    {
+        _contactService = contactService;
+    }
+    public void OnGet(int id)
+    {
+        Contact = _contactService.GetContactById(id);
+        Cities = _contactService.GetCities();
+    }
+
+    public IActionResult OnPost()
+    {
+        if (ModelState.IsValid)
+        {
+            _contactService.UpdateContact(Contact);
+            return RedirectToPage("/Contacts");
+        }
+        Cities = _contactService.GetCities();
+        return Page();
+    }
+}
+
+14. Chỉnh sửa chức năng Update Contact trong ContactService
+
+
+public class ContactService
+{
+    private readonly List<Contact> _contacts;
+    private readonly List<City> _cities; 
+    public ContactService()
+    {
+        // Khởi tạo dữ liệu mẫu
+        _contacts = new List<Contact>
+    {
+        new Contact { Id = 1, Name = "John Doe", Address = "123 Main St", CityCode="HN" },
+        new Contact { Id = 2, Name = "Jane Smith", Address = "456 High St", CityCode="HY" }
+    };
+        _cities = new List<City>
+        {
+            new City{CityCode ="HN", Name ="Ha Noi"},
+            new City{CityCode ="TPHCM", Name ="Thanh Pho Ho Chi Minh"},
+            new City{CityCode ="HP", Name ="Hai Phong"},
+            new City{CityCode ="HY", Name ="Hung Yen"},
+        };
+    }
+
+    public List<Contact> GetContacts()
+    {
+        return _contacts;
+    }
+
+    public Contact GetContactById(int id)
+    {
+        return _contacts.FirstOrDefault(c => c.Id == id);
+    }
+
+    public void AddContact(Contact contact)
+    {
+        contact.Id = _contacts.Max(c => c.Id) + 1; // Tự động tăng ID
+        _contacts.Add(contact);
+    }
+
+    public void UpdateContact(Contact contact)
+    {
+        var existingContact = GetContactById(contact.Id);
+        if (existingContact != null)
+        {
+            existingContact.Name = contact.Name;
+            existingContact.Address = contact.Address;
+            existingContact.CityCode = contact.CityCode;
+        }
+    }
+
+    public List<City> GetCities()
+    {
+        return _cities;
+    }
+
+}
