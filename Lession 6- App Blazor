@@ -1,0 +1,272 @@
+1. Tạo một ứng dụng Blazor
+2. Thêm một thư mục là Models, sau đó thêm các lớp sau vào Models
+ public class City
+ {
+     public string CityCode { get; set; }
+     public string Name { get; set; }
+ }
+ 
+  public class Contact
+ {
+     public int Id { get; set; }
+     public string Name { get; set; }
+     public string Address { get; set; }
+     public string CityCode { get; set; }
+     public Contact(string Name, string Address) {
+         this.Name = Name;
+         this.Address = Address;
+     }
+     public Contact() { }
+     public Contact(string Name, string Address, string CityCode)
+     {
+         this.Name = Name;
+         this.Address = Address;
+         this.CityCode = CityCode;
+     }
+ }
+ 
+ 
+   public class ContactService
+  {
+      private readonly List<Contact> _contacts;
+      private readonly List<City> _cities;
+      public ContactService()
+      {
+          // Khởi tạo dữ liệu mẫu
+          _contacts = new List<Contact>
+      {
+           new Contact { Id = 1, Name = "John Doe", Address = "123 Main St", CityCode="HN" },
+          new Contact { Id = 2, Name = "Jane Smith", Address = "456 High St", CityCode="HY" }
+      };
+
+          _cities = new List<City>
+          {
+              new City{CityCode ="HN", Name ="Ha Noi"},
+              new City{CityCode ="TPHCM", Name ="Thanh Pho Ho Chi Minh"},
+              new City{CityCode ="HP", Name ="Hai Phong"},
+              new City{CityCode ="HY", Name ="Hung Yen"},
+          };
+      }
+
+      public List<Contact> GetContacts()
+      {
+          return _contacts;
+      }
+
+      public Contact GetContactById(int id)
+      {
+          return _contacts.FirstOrDefault(c => c.Id == id);
+      }
+
+      public void AddContact(Contact contact)
+      {
+          contact.Id = _contacts.Max(c => c.Id) + 1; // Tự động tăng ID
+          _contacts.Add(contact);
+      }
+
+      public void UpdateContact(Contact contact)
+      {
+          var existingContact = GetContactById(contact.Id);
+          if (existingContact != null)
+          {
+              existingContact.Name = contact.Name;
+              existingContact.Address = contact.Address;
+              existingContact.CityCode = contact.CityCode;
+          }
+      }
+
+      public List<City> GetCities()
+      {
+          return _cities;
+      }
+  }
+2. Chỉnh sửa tệp Program.cs
+
+Chú ý các lênh using
++ app.MapRazorComponents<App>()
+    .AddInteractiveServerRenderMode();
++ builder.Services.AddSingleton<ContactService>();
+	
+
+using BlazorApp5.Components;
+using BlazorApp5.Models;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddSingleton<ContactService>();
+// Add services to the container.
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents();
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Error", createScopeForErrors: true);
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
+}
+
+app.UseHttpsRedirection();
+
+app.UseStaticFiles();
+app.UseAntiforgery();
+
+app.MapRazorComponents<App>()
+    .AddInteractiveServerRenderMode();
+ 
+app.Run();
+
+
+3. Thêm các trang 
+3.1. Trang hiển thị contact
+@page "/contacts"
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.Components
+@using Models
+@inject ContactService ContactService
+@inject NavigationManager NavigationManager
+<h3>Contact Info</h3>
+
+<table border="1">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Address</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var contact in ContactService.GetContacts())
+        {
+            <tr>
+                <td>@contact.Name</td>
+                <td>@contact.Address</td>
+                <td>@contact.CityCode</td>
+                <td>
+                    <button @onclick="()=>EditContact(contact.Id)">Edit</button>
+                    
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<button @onclick="NavigateToAddPage">Add Contact</button>
+<a href="/add-contact">Add New Contact</a>
+
+@code {
+    private void NavigateToAddPage() =>NavigationManager.NavigateTo("/add-contact");
+    private void EditContact(int id) => NavigationManager.NavigateTo($"/edit-contact/{id}");
+
+}
+
+
+3.2 . Trang thêm contact
+@page "/add-contact"
+@rendermode InteractiveServer
+
+@using Microsoft.AspNetCore.Components
+@inject NavigationManager NavigationManager
+
+@using Models
+@inject ContactService ContactService
+<h3>Add Contact</h3>
+
+<div>
+    <label>Name:</label>
+    <input type="text" @bind="newContact.Name" />
+</div>
+<div>
+    <label>Address:</label>
+    <input type="text" @bind="newContact.Address" />
+</div>
+<div>
+    <label>City:</label>
+    <select @bind="SelectedCityCode">
+        <option value="">Please choice city</option>
+        @foreach(var city in ContactService.GetCities())
+        {
+            <option value="@city.CityCode">@city.Name</option>
+        }
+    </select>
+</div>
+<button @onclick="SaveData">Save</button>
+<br />
+<a href="/contacts">Back to list</a>
+
+@code {
+    private Contact newContact = new Contact();
+    private string SelectedCityCode;
+    private void SaveData()
+    {
+        string name = newContact.Name;
+        string address = newContact.Address;
+        string citycode = SelectedCityCode;
+        Contact c = new Contact(name, address, citycode);
+        ContactService.AddContact(c);
+        NavigationManager.NavigateTo("/contacts");
+    }
+}
+
+3.3. Trang sửa contact
+@page "/edit-contact/{ContactId:int}"
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.Components
+@using Models
+@inject ContactService ContactService
+@inject NavigationManager NavigationManager
+
+
+<h3>Edit Contact</h3>
+@if(contact == null)
+{
+    <p>Loading.....</p>
+}
+else
+{
+    <div>
+        <label>Name:</label>
+        <input type="text" @bind="contact.Name" />
+    </div>
+    <div>
+        <label>Address:</label>
+        <input type="text" @bind="contact.Address" />
+    </div>
+    <div>
+        <label>City:</label>
+        <select @bind="contact.CityCode">
+            @foreach(var city in ContactService.GetCities())
+            {
+              <option value="@city.CityCode">@city.Name</option>
+            }
+        </select>
+    </div>
+    <div>
+        <button @onclick="updateData">Update</button>
+    </div>
+}
+
+
+@code {
+    [Parameter] public int ContactId{ get; set; }
+    private Contact? contact;
+
+    private string SelectedCityCode;
+    protected override void OnInitialized()
+    {
+        contact = ContactService.GetContactById(ContactId);
+    }
+
+    private void updateData()
+    {
+        string name = contact.Name;
+        string address = contact.Address;
+        string citycode = contact.CityCode;
+        Contact c = new Contact(name, address);
+        ContactService.UpdateContact(c);
+        NavigationManager.NavigateTo("/contacts");
+    }
+}
+
