@@ -1,0 +1,120 @@
+Slide 10:
+1. Websocket là một giao thức hỗ trợ giao tiếp Server với Client. Websocket luôn tạo một và duy trì một kết nối hai chiều giữa Server và Client, giúp quá trình trao đổi dữ liệu có thể thực hiện theo thời gian thực
+2. Server-Sent Events: là cơ chế cho phép máy chủ gửi dữ liệu tới Client, SSE chỉ tạo ra kết nối một chiều từ Server tới Client. Khi Client gửi yêu cầu tới máy Server thì Server sẽ tạo một kết nối và duy trì nó liên tục để gửi dữ liệu
+3. Long polling hoạt động dựa trên HTTP, khi client có yêu cầu thì server sẽ mở kết nối và không đáp ứng yêu cầu ngay mà giữ kết nối trong một khoảng thời gian dài để truyền dữ liệu.
+
+
+
+Slide 11:
+SignalR sử dụng hub để truyền thông giữa Client và Server
+Hub là một luồng (Pipline) ở mức cao, cho phép client và server gọi các phương thức của nhau
+SignalR hỗ trợ  Server gọi các phương thức từ Client và ngược lại, có thể sử dụng các tham số trong các phương thức 
+SignalR cung cấp các giao thức
++ text based sử dụng cấu trúc Json
++ binary based dựa trên MessagePack
+
+
+Slide 12:
+MessagePack tạo ra các gói tin nhỏ hơn so với sử dụng JSON
+Trình duyệt phải hỗ trợ giao thức XHR 2.0. Đây là một giao thức XMLHttp hỗ trợ công nghệ Ajax (truyền bất đồng bộ) => Ứng dụng web hoạt động mượt mà hơn
+Hub sẽ gọi các phương thức từ Client bằng cách gửi các bản tin chứa tên và tham số của phương thức
+Các tham số dạng object sẽ được tuần tự (deserialized) thông qua các giao thức đã được cấu hình sẵn
+Client sẽ tìm kiếm các phương thức tương ứng
+Khi tìm thấy sẽ tự gọi thực hiện phương thức
+
+
+Slide 13:
+MessagePack là chuẩn dựa trên mã hóa nhị phân
+Nó cho phép trao đổi dữ liệu giữa các ứng dụng khác nhau tương tự như JSON, tuy nhiên MessagePack thường có kích thước nhỏ và tốc độ truyền nhanh hơn JSON
+Ví dụ như số nguyên nhỏ có thể được mã hóa dạng nhị phân 1 byte
+
+
+Slide 14:
+SignalR Hub API cho phép Server gọi các phương thức trên các Client đã kết nối 
+Ở phía Server, chúng ta định nghĩa các phương thức được gọi bởi Client
+Ở phía Client chúng ta cũng có thể định nghĩa các phương thức được gọi bởi Server
+ SignalR sẽ xử lý mọi thứ và cho phép client trao đổi dữ liệu với server theo thời gian thực, và ngược lại
+
+Slide 15:
+Để tạo và sử dụng hub thực hiện theo 2 bước
+Tạo hub bằng cách kế thừa từ lớp Hub
+Client gọi các phương thức từ hub
+Chú ý: định nghĩa các phương thức dạng public
+
+
+Slide 16:
+Lớp middleware của Signalr yêu cầu một số dịch vụ, các dịch vụ này được cấu hình thông qua lệnh services.AddSignalR()
+Khi cần them một chức năng vào SignalR trong ứng dụng ASP.NET Core, cần setup SignalR routes thông qua phương thức endpoint.MapHub trong tệp Startup.Configure
+
+
+Slide 17:
+Lớp Hub có nhiều phương thức hỗ trợ tạo kết nối và trao đổi dữ liệu giữa client và server
+
+ConnectionId: trả về Id của kết nối, mỗi kết nối có một Id duy nhất
+UserIdentifier: Trả vể định danh của người sử dụng
+User: trả về ClaimsPrincipal, là một đối tượng đại diện cho danh tính của người dung, nó chứa các thông tin cơ bản của người dùng như vai trò, tên, quyền hạn
+
+Items: trả về dữ liệu kiểu collection có cấu trúc dạng key/value
+
+Features: trả về các tính chất cơ bản của kết nối
+ConnectionAborted: trả về thông báo khi kết nối bị hủy bỏ 
+
+Slide 18:
+GetHttpContext: trả về HttpContext của kết nối hiện tại, chúng ta có thể lấy các thông tin cơ bản của đối tượng Http
+Abort: hủy kết nối
+
+Slide 19:
+All: gọi phương thức trên tất cả các client đã kết nối
+Caller: gọi một phương thức trên Client đã được  chỉ định trên hub, Caller đại diện cho người kết nối đang gọi phương thức hoặc gửi dữ liệu tới server
+Others: Gọi phương thức trên tất cả các máy client đã kết nối, trừ người gọi hiện tại
+
+Slide 20:
+Một số phương thức khác như client: gọi tới một client cụ thể
+Group: gọi một phương thức từ một nhóm xác định đã kết nối với server
+
+
+Slide 22:
+Một nhược điểm của việc gọi SendAsync là nó dưa trên tham số String, do vậy không kiểm tra được tính an toàn của kiểu dữ liệu (Type Safty)
+Có nghĩa nếu chúng ta cung cấp tên phương thức hoặc dữ liệu sai, sẽ dẫn tới lỗi runtime
+
+
+Slide 23:
+Theo ngầm định tên các phương thức trong hub được qui định bởi .NET
+Có thể sử dụng định hướng [HubMethodName] để thay đổi tên phương thức
+=> Giúp cho Client dễ dàng hơn trong việc gọi các phương thức trên Server
+
+Slide 24:
+\Các API của SignalR cung cấp hai phương thức là: OnConnectedAsync và OnDisconnectedAsync để quản lý và theo dõi các kết nối.
+Có thể ghi đè phương thức OnConnectedAsync để thực hiện các thao tác về kết nối, ví dụ khi muốn thêm một kết nối vào một nhóm
+Tương tự chúng ta cũng có thể ghi đè phương thức OnDisconnectedAsync  để thực hiện các thao tác ngắt kết nối.
+
+
+Slide 26:
+Xử lý lỗi là một vấn đề cơ bản trong lập trình
+Thông thường khi xuất hiện lỗi, chương trình sẽ ném ra các ngoại lệ (Exceptions), lỗi này sẽ được giử tới Client dưới dạng rejected Promise, máy client sẽ bắt được lối này và thực hiện các xử lý tương ứng
+
+
+Slide 27:
+Hub filter có trong ASP.NET Core từ ver 5.0
+Nó cho phép thực hiện các logic trươc và sau khi các phương thức trên hub được gọi bởi client, nó hoạt động gống như một MiddleWare
+Với Hub filter chúng ta có thể kiểm tra, sửa đổi hoặc thực hiện các hoạt động đặc biệt liên quan đến dữ liệu hoặc các trang thái kết nối của SignalR
+
+Tạo Hub filter
+Cấu hình Hub filter
+Sử dụng Hub filter
+
+ 
+Slide 28:
+Tạo Hub filter
+Tạo Hub filer bằng cách kế thừa từ lớp  IHubFilter và ghi đè phương thức: InvokeMethodAsync
+Cũng có thể cần ghi đè them các phương thức: OnConnectedAsync và OnDisconnectedAsync để quản lý các kết nối
+ 
+Slide 30:
+Cấu hình Hub filter
+Hub filter có thể áp dụng kiểu là global hoặc  hub
+Có thể có nhiều hub filter, các hub filter được thực hiện tuần tự
+Filter global được ưu tiên thực hiện trước
+
+Slide 31
+Khi tạo các bộ lọc, cố gắng tạo ra các bộ lọc mang tính tổng quát, tránh tạo các bộ lọc quá chi tiết và cục bộ
+
