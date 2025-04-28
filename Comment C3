@@ -1,0 +1,85 @@
+Slide 4:
+SOLID principle là các nguyên tắc cơ bản của lập trình hướng đối tượng, được để xuất bởi Martin vào năm 2000
+SOLID là một tập hợp các nguyên tắc cơ bản trong việc thiết kế phần mềm theo hương đối tượng
+SOLID gồm 5 nguyên tăc cơ bản:  
+1. single responsibility principle: trách nhiệm duy nhất 
+2. open-closed principle: nguyên tắc đóng/mở
+3. Liskov substitution principle: nguyên tắc thay thế Liskov
+4. interface segregation principle: nguyên tắc giao diện phân tách
+5. dependency inversion principle: nguyên tắc phụ thuộc đảo ngược
+
+Slide 6:
+
+S - Single Responsibility Principle: Mỗi lớp chỉ nên có một nhiệm vụ duy nhất, mỗi lớp có quá nhiều chức năng => khó thay đổi và bảo trì hệ thống
+Chỉ có một lý do duy nhất để sửa đổi class
+Ví dụ:  Class ReportManager{
+	public void ReadDB()
+	public void ProcessReport()
+	public void PrintReport()
+}
+Class này có 3 nhiệm vụ là đọc DB, xử lý dữ liệu và in báo cao => Nếu có thay đổi về DB, hoặc cấu trúc Report,.. => Thay đổi class
+
+O - Open/Closed Principle: có thể mở rộng một lớp, nhưng không được sửa đổi bên trong lớp
+Mỗi khi chúng ta cần them các chức năng trong chương trình => tạo lớp mới kế thừa từ các lớp đã có, không nên sửa đổi lớp
+Ví dụ: class Bloger{
+	private string name;
+	private int post;
+	public int paySalary(){
+		Sử dụng if theo post để tính lương
+	}
+}
+Lớp Bloger như vậy sẽ có vấn đề khi chúng ta cần thêm một loại hình trả lương => Phải sửa lại phương thức paySalary
+Sửa lại lớp Bloger bằng cách bỏ phương thức tính lương, mở rộng các lớp con
+	class Bloger1 extents Bloger{
+		public int paySalary(){
+			return salary;
+		}	
+	}
+
+L - Liskov Substitution Principle: Trong chương trình các object của lớp con cần được kế thừa tất cả các thuộc tính và hành vi của lớp cha. 
+Ví du: tạo một lớp Bird
+class Bird{
+	public virtual void Fly(){console.writeln(“Chim bay”); }
+}
+Class Chim_Cau:Bird{
+	public overide void Fly(){console.writeln(“Chim cau bay”); }
+}
+Class Chim_Canh_Cut:Bird{
+	public overide void Fly(){throw new NotFlyException();}
+}
+Trong hàm main nếu chúng ta tạo một danh sách các com chim và gọi phương thức Fly(), nếu gặp đối tượng là chim cánh cụt thì sẽ bị exception => vi phạm nguyên tắc LSP
+
+I - Interface Segregation Principle: Không nên để các giao diện quá lớn với quá nhiều tính năng, vì nguyên tắc khi triển khai các lớp từ interface, chúng ta phải implement tất cả các chức năng, tuy nhiên có thể có các lớp không cần sử dụng một số chức năng
+D - Dependency Inversion Principle: các module cấp cao không nên phụ thuộc vào các module cấp thấp, cả hai nên phụ thuộc vào abstraction. 
+Ví dụ trong OOP, interface không nên phụ thuộc vào class
+Ví dụ: 
+class EmailSender{
+	public void SendMail(){}
+}
+Class Notification{
+	private EmailSender _email;
+	public Notification(){
+		_email = new EmailSender ();
+	} 
+	public void SendNotification(){
+		_email.SendMail();
+
+	}
+}
+Nếu cần gửi cả Notification và email => Phải tạo thêm lớp SMSSender và chỉnh lớp Notification => Vi phạm nguyên tắc DI và Opened/Closed
+Trong lập trình OOP chúng ta sẽ giải quyết bằng cách sử dụng Interface để giảm phụ thuộc của các lớp
+Public class EmailSender :Isender{
+	pulic void Send(){
+	}
+}
+Public class SMSSender: Isender{
+	public void Send(){}
+}
+Class Notification{
+	private Icollection<ISender> _senders;
+	public Notification(Icollection<ISender> _senders){ this, senders = senders;}
+	public void Send(){
+		foreach(var message in _senders){message.Send();}
+	}
+}
+
