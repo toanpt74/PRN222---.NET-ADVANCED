@@ -83,3 +83,33 @@ Class Notification{
 	}
 }
 
+Slide  22:
+Đảo ngược điều khiển là một nguyên tắc cơ bản trong lập trình hướng đối tượng,
+Trong OOP các đối tượng tự tạo và điều khiển các phụ thuộc mà chúng cần => ràng buộc cứng nhắc khó điều khiển và mở rộng
+IoC giải quyết vấn đề này bằng cách giao trách nhiệm tạo và quản lý phụ thuộc cho một đối tượng khác
+Dependency Injection (DI): Các phụ thuộc được triển khai trong hàm tạo 
+Event Listener/CallBack: đăng ký một sự kiện hoặc một CallBack để framework xử lý logic
+Ví dụ về DI
+Public interface IMessageSender{
+	void SendMessage(string message);
+}
+Public class EmailSender: IMessageSender{
+	public void SendMessage(string message){
+		Console.Writeln(“Email: ” + message);
+	}
+}
+Public class SMSSender: IMessageSender{
+	public void SendMessage(string message){
+		Console.Writeln(“SMS:” + message);
+	}
+}
+Public class Notification{
+	private IMessageSender _messageSender;
+	public  Notification(IMessageSender _messageSender){this. messageSender=messageSender;}
+	public void Notify(string message){
+		messageSender.SendMessage(message);	
+	}
+}
+Định nghĩa một interface IMessageSender với phương thức SendMessage(), sau đó triển khai hai lớp EmailSender và SMSSender, lớp Notification sử dụng giao diện  IMessageSender thông qua DI trong constructor
+
+
