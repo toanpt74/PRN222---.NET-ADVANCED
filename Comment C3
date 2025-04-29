@@ -113,3 +113,140 @@ Public class Notification{
 Định nghĩa một interface IMessageSender với phương thức SendMessage(), sau đó triển khai hai lớp EmailSender và SMSSender, lớp Notification sử dụng giao diện  IMessageSender thông qua DI trong constructor
 
 
+Slie 23:
+Hướng phụ thuộc trong ứng dụng thường theo hướng từ interface, trừu tượng hóa đến chi tiết, có nghĩa là các lớp sẽ phụ thuộc vào interface hoặc các lớp trừu tượng
+Lớp con phụ thuộc vào lớp cha
+
+Ví dụ nếu lớp A gọi phương thức của lớp B và lớp B gọi phương thức của lớp C thì tại thời điểm biên dịch, lớp A sẽ phụ thuộc vào lớp B và lớp B sẽ phụ thuộc vào lớp C
+
+
+
+SLIDE 24:
+
+Áp dụng nguyên tắc DIP, lớp A không nhất thiết phải biết trực tiếp cách thức hoạt động của lớp B hoặc lớp C, mà chỉ cần tương tác qua abstraction (sử dụng lớp trừu tượng hoặc interface)
+Nếu các phụ thuộc thay đổi (ví dụ lớp C được thay thế bởi lớp D) thì lớp A và B không cần thay đổi vì đã tuân thủ theo abstraction
+
+
+SLIDE 30:
+
+IoC có thể triển khai theo phương pháp sử dụng abstraction
+Ý tưởng chính là giảm sự phụ thuộc chặt chẽ giữa các lớp trong chương trình
+Có 4 cách đển triển khai
++ Triển khai DI trong hàm tạo của lớp:  các phụ thuộc được truyền vào thông qua hàm khởi tạo của lớp
++ Triển khai trong các properties: các phụ thuộc được truyền vào thông qua phương thức setter sau khi đối tượng được khởi tạo
++ Triển khai DI trong phương thức: các phụ thuộc được truyền vào các phương thức cụ thể tại thời điểm runtime
++ Ambient Injection: sử dụng các framework của hệ thống để quản lý các phụ thuộc
+
+SLIDE 31:
+Các lợi ích của DI
+Late binding: các dịch vụ có thể dễ dàng thay đổi hoặc hoán đổi mà không cần phải thay đổi mã nguồn
+
+Extensibility: chương trình có thể dễ dàng mở rộng và tái sử dụng
+
+Parallel development: việc phát triển chương trình có thể triển khai đồng thời
+Maintainability: các lớp được triển khai đơn nhiệm giúp dễ dàng trong việc bảo trì hệ thống
+Testability: dễ dàng kiểm thử chương trình
+
+SLIDE 32:
+Trong .NET Core hỗ trợ DI Container, giúp thuận tiện hơn trong việc triển khai DI
+ 
+DI Container là một thư viện cung cấp nhiều thư viện hỗ trợ tạo và quản lý vòng đời của các đối tượng
+DI Container hỗ trợ quản lý  DI một cách tự động, gồm các chức năng cơ bản
+Đăng kí: có thể đăng kí các dịch vụ hoặc các phụ thuộc với DI container  bằng cách chỉ ra:
++ Lifetime: vòng đời của dịch vụ (Transient: một thể hiện mới được tạo mỗi khi dịch vụ được yêu cầu, Scoped: một thể hiện mới được tạo cho mỗi yêu cầu HTTP, Singleton: chỉ có một thể hiện được tạo ra trong toàn bộ ứng dụng)
++ Cách ánh xạ: liên kết interface với lớp cụ thể
+VD:  builder.Services.AddSingleton<ContactService>();
+
+2. Cung cấp dịch vụ (Resolution): DI container chịu trách nhiệm tạo và cung cấp các thể hiện của các dịch vụ theo yêu cầu, khi một phụ thuộc được yêu cầu trong hàm tạo hoặc thông qua các DI khác, DI tự động cung cấp các thể hiện phù hợp
+VD:
+Class A{
+	private IMyService _myService;
+	public A(IMyService myService){ this. myService = myService;}
+}
+
+3. Disposition: DI container quản lý vòng đời của các phụ thuộc theo các tiêu chí cụ thể
+
+SLIDE 33:
+
+Vòng đời của các dịch vụ
+Trong DI container, cung cấp 3 loại chính là Singleton, Scoped, and Transient
+
+Singleton: một thể hiện duy nhất của đối tượng được tạo ra trong toàn bộ chương trình
+Scoped: thể hiện của đối tượng được tạo ra trong ngữ cảnh (phạm vi local) và không thể mở rộng ra ngoài ngữ cảnh
+
+Transient: một thể hiện mới của class được tạo ra mỗi khi có yêu cầu.
+
+SLIDE 34:
+.Net core cung cấp các thư viện liên quan đến DI trong Microsoft.Extensions.DependencyInjection
+Có thể cài đặt thêm từ NuGet
+Một số lớp cơ bản:
+
+1. ActivatorUtilities: cung cấp các phương thức để tạo đối tượng một các linh hoạt, đặc biệt là khi chúng ta cần triển khai các DI thủ công hoặc các DI không có sẵn
+2. DefaultServiceProviderFactory: cung cấp phương thức để tạo ra các ServiceProvider, tức là container phụ thuộc (DI) quản lý các dich vụ trong ứng dụng, lớp này thường sử dụng các cơ chế măc định của .Net core để xử lý các DI
+3. ServiceCollection: được sử dụng để định nghĩa và quản lý các dich vụ trong ứng dụng, các dịch vụ cần phải đăng kí trong container
+4. ServiceProviderOptions: giúp kiểm soát cách container hoạt động và xử lý các dịch vụ trong ứng dụng
+5. HttpClientBuilderExtensions: lớp này bao gồm các phương thức mở rộng cho HttpClient, nhằm hỗ trợ làm việc với Http request một cách dễ dàng và thuận tiện hơn
+6. HttpClientFactoryServiceCollectionExtensions: lớp mở rộng thêm cho httpClient, giúp dễ dàng thêm và cấu hình các dịch vụ qua giao diện IHttpClientFactory 
+
+
+SLIDE 38:
+Triển khai DI trong hàm tạo của lớp
+Mô hình này các phụ thuộc cần thiết của lớp được cung cấp thông qua hàm tạo, đây là một phương pháp hiệu quả để quản lý DI
+Constructor của lớp sẽ chứa các tham số tương ứng với các phụ thuộc mà lớp cần, khi được khởi tạo, container sẽ tự cung cấp DI tới các thể hiện
+
+SLIDE 41:
+
+Ưu điểm mô hinh Constructor Injection
+
+Đây là phương pháp triển khai DI hiệu quả và phổ biến nhất các phụ thuộc được đưa vào các đối tượng ngay khi mới tạo ra chúng
+Cách triển khai này dễ dàng và thuận tiện cho các nhà phát triển chương trình
+Luôn đảm bảo tính an toàn, lớp không thể được khởi tạo nếu thiếu các phụ thuộc cần thiết => giảm thiểu các lỗi runtime
+Cách sử dụng này đảm bảo tính bền vững vì các phụ thuộc được khởi tạo khi lớp được tạo và không thay đổi trong suốt vòng đời của đối tượng.
+
+Hạn chế: 
++ Constructor có thể phức tạp, nếu một constructor có quá nhiều phụ thuộc, đây là dấu hiệu vi phạm nguyên tắc Đơn nhiệm (Single Responsibility Principle)
++ Tăng độ phức tạp khi sử dụng DI container: với các hệ thống lớn việc cấu hình nhiều phụ thuộc trong DI container có thể trở nên phức tạp, đặc biệt khi các phụ thuộc có liên quan chặt chẽ với nhau
++ Giảm tính linh hoạt khi runtime: một khi lớp đã được khởi tạo, các phụ thuộc được đưa vào constructor, không thể thay đổi mà không khởi động lại đối tượng.
+
+SLIDE 42:
+
+Trong mô hình này các phụ thuộc được định nghĩa dưới dạng thuộc tính, các thuộc tính của lớp sẽ được sử dụng để nhận các phụ thuộc từ DI container
+Không cần truyền các phụ thuộc vào constructor
+
+SLIDE 45:
+
+Ưu điểm:
++ Phù hợp cho các phụ thuộc tùy chọn, các phụ thuộc không bắt buộc hoặc chỉ cần có trong một số trường hợp cụ thể
++ Linh hoạt tại runtime: các phụ thuộc có thể thay đổi sau khi đã tạo đối tượng
++ Đơn giản hóa hàm constructor => tránh vi phạm nguyên tắc SRP
+
+Hạn chế: 
++ Không đảm bảo đầy đủ phụ thuộc: các đối tượng có thể không nhận được tất cả các phụ thuộc nếu các thuộc tính không được gán giá trị
++ Vi phạm tính bất biến: Các thuộc tính có thể thay đổi  sau khi đã tạo đối tượng => có thể thay đổi các phụ thuộc
++ Ít được triển khai hơn so với constructor injection
+
+SLIDE 46:
+
+Phương pháp này sẽ đưa các phụ thuộc vào trong các phương thức của lớp
+Tương tự như với property, các phụ thuộc sẽ được tạo ra khi chúng ta gọi tới các phương thức.
+
+Ưu điểm: cho phép gọi thực thi các phương thức một cách linh hoạt và phù hợp với ngữ cảnh, các phụ thuộc không bị ràng buộc cố định vào constructor khi khởi tạo đối tượng
+Hạn chế: Nếu cần sử dụng lại các phụ thuộc nhiều lần trogn lớp, sẽ phải tiêm lại mỗi khi gọi phương thức
++ Khó đọc và duy trì: khi chương trình cần quá nhiều các phụ thuộc => mã nguồn có thể phức tạp và khó bảo trì
+
+SLIDE 49:
+
+Các phụ thuộc không được đưa vào constructor, setter hay method, chúng được truy cập thông qua môi trường runtime hoặc môi trường chung
+
+Ưu điểm: giảm phụ thuộc, các lớp không cần biết về cách thức triển khai phụ thuộc, chúng chỉ cần cập nhật các phụ thuộc từ môi trường
++ Tăng tính linh hoạt: các phụ thuộc có thể được thay đổi hoặc cấu hình lại mà không cần chỉnh sửa lớp
+
+Hạn chế: Khó kiểm tra, vì các phụ thuộc không được đưa vào trong constructor, setter, method => khó hiểu về nguồn gốc của các phụ thuộc, khó chỉnh sửa, quản lý
+
+
+
+ 
+
+
+
+
