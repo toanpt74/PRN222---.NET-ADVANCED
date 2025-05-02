@@ -344,7 +344,228 @@ using Microsoft.AspNetCore.Mvc;
          return RedirectToAction("Index", "ContactInfo");
      }        
  }
+----------------------------------------------
+THAO TAC VOI DB
+-------------------------------------------
+1. Sua lai tep Program.CS
+
+using ContactManegementMVC;
+using ContactManegementMVC.Models;
+
  
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Extensions.FileProviders;
+
+namespace ContactManegementMVC
+{
+    public class Program
+    {
+
+        public static void Main(string[] args)
+        {
+            var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+            IConfiguration cf = builder.Build();
+
+            
+            CreateHostBuilder(args).Build().Run();
+
+        }
+
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseStartup<Startup>();
+                });
+    }
+}
+2. Tao tep Startup.CS
+
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
+
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.FileProviders;
+
+using ContactManegementMVC.Models;
+
+namespace ContactManegementMVC
+{
+    public class Startup
+    {
+        
+        public IConfiguration Configuration { get; }
+
+        public Startup(IConfiguration configuration, IHostEnvironment env)
+        {
+            Configuration = configuration;
+
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(env.ContentRootPath)
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddEnvironmentVariables();
+            Configuration = builder.Build();
+
+        }
+
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddMvcCore();
+            services.AddControllersWithViews();
+            services.AddMvc();
+            services.AddDistributedMemoryCache();
+
+            services.AddSession();
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddSingleton<ContactService>();
+            string connectionString = Configuration["ConnectionStrings:cnn"];
+            //  this is how a class inheriting dbcontext can be called
+            //  services.AddDbContext<DbRepository>(options => options.UseSqlServer(connectionString));
+            //  or call IDbRepository as a custom service
+            
+            services.AddScoped<IDbRepository>(repository => new DbRepository(connectionString));
+
+            services.AddOptions();
+           // services.Configure<Global>(Configuration);
+
+           // services.AddDetection();
+        }
+
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        {
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+            else
+            {
+                app.UseExceptionHandler("/Home/Error");
+                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+                app.UseHsts();
+            }
+          
+            app.UseHttpsRedirection();
+            app.UseStaticFiles();
+
+            app.UseStatusCodePages();
+
+
+            app.UseRouting();
+
+
+
+            app.UseAuthorization();
+            app.UseSession();
+
+            var provider = new FileExtensionContentTypeProvider();
+
+
+            app.UseEndpoints(endpoints =>
+            {
+
+                
+
+                endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
+
+            });
+
+
+            AppDomain.CurrentDomain.SetData("ContentRootPath", env.ContentRootPath);
+            AppDomain.CurrentDomain.SetData("WebRootPath", env.WebRootPath);
+
+
+
+        }
+    }
+}
+3. Ket noi DB
+
+using ContactManegementMVC.Models;
+using Microsoft.AspNetCore.Mvc;
+using System.Data;
+
+namespace ContactManegementMVC.Controllers
+{
+    public class ContactInfoController : Controller
+    {
+        string msg = "";
+        private readonly IDbRepository _dbrepository;
+        public static string strcnn = "";
+        private readonly ContactService _contactService;
+
+        public ContactInfoController(ContactService contactService, IDbRepository dbrepository)
+        {
+            _dbrepository = dbrepository;
+            _contactService = contactService;
+
+            strcnn = _dbrepository.GetConnectionString();
+            string strSQL = "Select * from tblContact";
+            DataTable dt = new DataTable();
+            dt = RICDB.DB.RunSQL(strSQL, ref msg, strcnn);
+            
+            if (dt.Rows.Count > 0)
+            {
+                for (int i = 0; i < dt.Rows.Count; i++)
+                {
+                    string name = dt.Rows[i]["Name"].ToString();
+                    string address = dt.Rows[i]["Address"].ToString();
+                    Contact c = new Contact(name, address);
+                    _contactService.AddContact(c);
+
+                }
+            }
+        }
+
+        [HttpGet("/contacts")]
+        public IActionResult Index()
+        {
+            var contacts = _contactService.GetContacts();
+            return View(contacts);
+        }
+
+        public IActionResult Delete(int id) {
+            Contact c = _contactService.GetContactById(id);
+            var contacts = _contactService.GetContacts();
+            if(c!=null) contacts.Remove(c);
+            return RedirectToAction("Index", "ContactInfo");
+        }        
+    }
+}
+Chu y: xau ket noi trong tep appsettings.json
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  "ConnectionStrings": {
+    "cnn": "Data Source=107.125.149.68;Initial Catalog=DVM;Persist Security Info=True;User ID=sa;Password=sdv2020@;Min Pool Size=2;Max Pool Size=25;Connect Timeout=30;"
+  }
+}
+
 
 
 	
