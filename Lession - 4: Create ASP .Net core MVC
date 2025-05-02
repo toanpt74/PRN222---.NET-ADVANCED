@@ -1,0 +1,350 @@
+Xây dựng ứng dụng quản lý contact bằng ASP.NET Core MVC
+Ứng dụng sử dụng một List để quản lý các contact
+
+1. Tạo ứng dụng
+Chọn new project sau đó chọn ASP .NET Core Web App (MVC)
+
+2. Bấm F5 chạy thử
+
+3. Mở thư mục Models và thêm các lớp sau 
+
+lớp Contact
+
+public int Id { get; set; }
+     public string Name { get; set; }
+     public string Address { get; set; }
+     public string CityCode { get; set; }
+     public Contact(string Name, string Address) {
+         this.Name = Name;
+         this.Address = Address;
+     }
+     public Contact() { }
+     public Contact(string Name, string Address, string CityCode)
+     {
+         this.Name = Name;
+         this.Address = Address;
+         this.CityCode = CityCode;
+     }
+Lớp ContactService
+
+public class ContactService
+{
+    private readonly List<Contact> _contacts;       
+    public ContactService()
+    {
+        // Khởi tạo dữ liệu mẫu
+        _contacts = new List<Contact>
+  {
+       new Contact { Id = 1, Name = "John Doe", Address = "123 Main St", CityCode="HN" },
+      new Contact { Id = 2, Name = "Jane Smith", Address = "456 High St", CityCode="HY" }
+  };
+     
+    }
+
+    public List<Contact> GetContacts()
+    {
+        return _contacts;
+    }
+
+    public Contact GetContactById(int id)
+    {
+        return _contacts.FirstOrDefault(c => c.Id == id);
+    }
+
+    public void AddContact(Contact contact)
+    {
+        contact.Id = _contacts.Max(c => c.Id) + 1; // Tự động tăng ID
+        _contacts.Add(contact);
+    }
+
+    public void UpdateContact(Contact contact)
+    {
+        var existingContact = GetContactById(contact.Id);
+        if (existingContact != null)
+        {
+            existingContact.Name = contact.Name;
+            existingContact.Address = contact.Address;
+            
+        }
+    }
+
+    
+}
+
+4. Đăng kí dịch vụ trong Program.cs
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+builder.Services.AddControllersWithViews();
+builder.Services.AddSingleton<ContactService>();
+
+var app = builder.Build();
+
+5. Thêm trang contact information
+5.1. Vào thư mục Views chọn New -> Folder -> ContactInfo
+		- Kích chuột phải vào Folder ContactInfo  và chọn Add View, đặt View là Index
+		- Mở Index và chỉnh lại Title cùng với Header của trang
+		
+@{
+    ViewData["Title"] = "Contact Page";
+}
+
+<div class="text-center">
+    <h3 class="display-4">Contact Information</h3>
+    
+</div>
+		
+		
+5.2. Kích chuột phải vào thư mục Controllers, chọn new -> Controller -> Empty Controller, đặt tên là ContactInfoController
+5.3. Kích chuột phải vào thư mục Models, chọn new class và đặt tên là ContactInfoModel.cs
+5.4. Mở tệp layout trong thư mục Views/Share và chỉnh lại liên kết thành Contact
+Bấm F5 chạy thử chương trình
+
+Chú ý: có thể sử dụng Route cho ứng dụng:
+Vào ContactInfoController thêm định hướng route vào đầu thủ tục
+[HttpGet("/contacts")]
+ public IActionResult Index()
+ {
+     return View();
+ }
+6. Lấy dữ liệu để hiển thị trong trang index
+6.1. Tạo thư mục là ContactInfo trong thư mục View, thêm trang Index
+ 
+@{
+    ViewData["Title"] = "Contact Page";
+}
+@model List<ContactManegementMVC.Models.Contact>
+
+<div class="text-center">
+    <h3 class="display-4">Contact Information</h3>
+    
+</div>
+
+<div>    
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Address</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var contact in Model)
+            {
+                <tr>
+                    <td>@contact.Name</td>
+                    <td>@contact.Address</td>
+                    <td>
+                        <a asp-page="/EditContact" asp-route-id="@contact.Id">Edit</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <a href="/AddContact">Add New Contact</a>
+</div>
+6.2 Thêm Controller:  ContactInfoController
+
+using ContactManegementMVC.Models;
+using Microsoft.AspNetCore.Mvc;
+
+namespace ContactManegementMVC.Controllers
+{
+    public class ContactInfoController : Controller
+    {
+        private readonly ContactService _contactService;
+
+        public ContactInfoController(ContactService contactService)
+        {
+            _contactService = contactService;
+            
+        }
+
+        [HttpGet("/contacts")]
+        public IActionResult Index()
+        {
+            var contacts = _contactService.GetContacts();
+            return View(contacts);
+        }      
+    }
+}
+
+7. Xây dựng trang thêm Contact
+7.1. Tạo thư mục AddContact trong View và thêm tệp Index
+ 
+@{
+    ViewData["Title"] = "Contact Page";
+}
+
+@model ContactManegementMVC.Models.Contact
+
+<div class="text-center">
+    <h3 class="display-4">Add New Contact </h3>
+
+</div>
+<div>
+    <form asp-controller="AddContact" asp-action="Create" method="post">
+        <label for="name">Name:</label>
+        <input type="text" id="name" asp-for="Name" required />
+        <br />
+        <label for="address">Address:</label>
+        <input type="text" id="address" asp-for="Address" required />
+        <br />
+        <button type="submit">Add Contact</button>
+    </form>
+</div>
+
+7.2. Thêm Controller cho trang này
+
+using ContactManegementMVC.Models;
+using Microsoft.AspNetCore.Mvc;
+
+ public class AddContactController : Controller
+ {
+     private readonly ContactService _contactService;
+     public AddContactController(ContactService contactService) {
+         _contactService = contactService;
+     }
+     public IActionResult Index()
+     {
+         return View();
+     }
+     [HttpPost]
+     public IActionResult Create(Contact c)
+     {
+         _contactService.AddContact(c);
+         return RedirectToAction("Index","ContactInfo");
+     }
+
+ }
+//Chú ý: Sử dụng ContactService chung trong toàn ứng dụng để lưu dữ liệu
+
+8. Thêm tính năng chỉnh sửa contact
+8.1. Thêm trang edit contact
+
+@{
+    ViewData["Title"] = "Contact Page";
+}
+
+@model ContactManegementMVC.Models.Contact
+
+<div class="text-center">
+    <h3 class="display-4">Edit Contact </h3>
+
+</div>
+<div>
+    <form asp-controller="EditContact" asp-action="Edit"  method="post">
+        <input type="hidden" id="id" asp-for="Id" required />
+        <label for="name">Name:</label>
+        <input type="text" id="name" asp-for="Name" required />
+        <br />
+        <label for="address">Address:</label>
+        <input type="text" id="address" asp-for="Address" required />
+        <br />
+        <button type="submit">Save Changes</button>
+    </form>
+</div>
+
+8.2. Thêm Controller cho tính năng edit
+
+ public class EditContactController : Controller
+ {
+     private readonly ContactService _contactService;
+     public EditContactController(ContactService contactService)
+     {
+         _contactService = contactService;
+     }
+     public IActionResult Index()
+     {
+         return View();
+     }
+     [HttpGet("/EditContact/{id}")]
+     public IActionResult Index(int id)
+     {
+         var contact = _contactService.GetContactById(id);
+         return View(contact);
+     }
+
+     [HttpPost]
+     public IActionResult Edit(Contact c)
+     {
+         _contactService.UpdateContact(c);
+         return RedirectToAction("Index", "ContactInfo");
+     }
+ }
+ 
+9. Thêm chức năng xóa contact
+9.1. Sửa lại trang contactInfo
+
+ 
+@{
+    ViewData["Title"] = "Contact Page";
+}
+@model List<ContactManegementMVC.Models.Contact>
+
+<div class="text-center">
+    <h3 class="display-4">Contact Information</h3>
+    
+</div>
+
+<div>    
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Address</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var contact in Model)
+            {
+                <tr>
+                    <td>@contact.Name</td>
+                    <td>@contact.Address</td>
+                    <td>
+                        <a href="/EditContact/@contact.Id">Edit</a>
+                    </td>
+                    <td>
+                        <a asp-controller="ContactInfo"  asp-action="Delete" asp-route-id="@contact.Id">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <a href="/AddContact">Add New Contact</a>
+</div>
+9.2. Sửa lại Controller của trang ContactInfo với tính năng xóa
+
+ public class ContactInfoController : Controller
+ {
+     private readonly ContactService _contactService;
+
+     public ContactInfoController(ContactService contactService)
+     {
+         _contactService = contactService;
+         
+     }
+
+     [HttpGet("/contacts")]
+     public IActionResult Index()
+     {
+         var contacts = _contactService.GetContacts();
+         return View(contacts);
+     }
+
+     public IActionResult Delete(int id) {
+         Contact c = _contactService.GetContactById(id);
+         var contacts = _contactService.GetContacts();
+         if(c!=null) contacts.Remove(c);
+         return RedirectToAction("Index", "ContactInfo");
+     }        
+ }
+ 
+
+
+	
