@@ -1,0 +1,151 @@
+SLIDE 3:
+Đĩa từ có thể được xem xét như một dãy tuần tự các Block, chương trình có thể thực hiện
++ Read Block
++ Write Block
+
+SLIDE 4:
+Một số vấn đề cần giải quyết
++ Làm thế nào để tìm kiếm được thông tin
++ Làm thế nào để bảo vệ dữ liệu của người dùng
++ Làm thế nào để biết được các khối còn trống, các khối đã sử dụng?
+
+SLIDE 6: 
+Cấu trúc tệp tin
+Có 3 kiểu cấu trúc tệp tin cơ bản là:
++ Dãy các byte
++ Dãy các bản ghi
++ Cấu trúc cây
+
+
+SLIDE 7:
+Các loại tệp tin
++ File exe: là file chương trình, có thể thực thi trên máy
++ Magic number: là kí tự nhận diện loại tệp tin, ví dụ tệp exe trong DOS thường là 0x4D5A
++ Text size: là kích thước của phần mã chương trình, đây là phần chứa các mã lệnh của chương trình
++ Data size kích thước của phần dữ liệu, nơi lưu trữ dữ liệu tĩnh của chương trình
++ BSS size: là vùng chứa dữ liệu chưa được khởi tạo, chứa các biến toàn cục chưa khởi tạo trong chương trình
++ Symbol table size: kích thước bảng kí hiệu, một cấu trúc dữ liệu quan trọng sử dụng trong quá trình biên dịch và liên kết, lưu trữ tên biến, hàm,…
++ Entry point: là địa chỉ của lệnh đầu tiên trong chương trình
++ Flags là các cờ được sử dụng để xác định quyền hạn, trạng thái, hoặc cấu hình của chương trình được tải vào bộ nhớ để thực thi
++ Phần relocation bits là phần quan trọng giúp chương trình hoạt động trong môi trường bộ nhớ động. Khi chương trình exe được nạp vào bộ nhớ đề thực thi, nó xác định một địa chỉ mặc định là Image Base
+Nếu HĐH cần tài chương trình vào một địa chỉ khác nó sẽ sử dụng Relocation Table để tìm các địa chỉ cần điều chỉnh, Relocation bits chứa danh sách các địa chỉ offset, giúp HĐH cập nhật địa chỉ mới khi khởi động chương trình
+-----------------------
+Tệp Archive:
++ Phần header: hỗ trợ nhận dạng tệp tin, chứa các thông tin chung về tệp tin (dung lượng, phương pháp nén,..)
++ Phần object module: lưu trữ mã tạm thời, hôn trợ liên kết (linking)
+
+SLIDE 13:
+Cấu trúc Single Level Directory: tất cả các tệp trong hệ thống đều được lưu trữ trong một thư mục
+Không có khái niệm thư mục con
+Ưu điểm: Dễ quản lý, cấu trúc đơn giản
+Hạn chế khi có nhiều người sử dụng
+
+SLIDE 14:
+Cấu trúc phân cấp cây thư mục
+Thư mục được tổ chức theo mô hình phân cấp dạng hình cây
+Ưu điểm: tránh xung đột tên tệp tin, hôn trợ đa người dung, tang khả năng bảo mật thông tin hỗ trợ hệ thống lớn
+
+
+SLIDE 17
+Hệ thống tệp tin
+Đĩa từ: dãy các block cho phép Read/Write
++ MBR: là một khu vực đặc biệt trên đĩa từ, sử dụng đề chứa thông tin về phân vùng và mã khởi động đầu tiên của HĐH, khi khởi động BIOS sẽ đọc thông tin trên MBR để nạp HĐH vào bộ nhớ
++ Partition table là bảng phân vùng, lưu trữ các thông tin về các phân vùng đĩa
++ Mỗi phân vùng đĩa gồm các thông tin chính: 
+Boot Block là thành phần quan trọng trên phân vùng đĩa, chứa mã khởi động của HĐH, thường nằm ở sector 0 của phân vùng dos chính
+Supper Block: là thành phần quan trọng, lưu trữ các thông tin tổng quan về toàn bộ hệ thống tệp tin (kích thước, loại tệp tin,…)
+Free space mgmt.: là phần giúp HĐH quản lý thông tin vùng trống trên đĩa, giúp HĐH giảm thiểu hiện tượng phân mảnh đĩa
+I-nodes: là một cấu trúc dữ liệu đặc biệt sử dụng trong HĐH Linux/Unix để quản lý tệp tin
+
+SLIDE 26:
+Journaling File System là một hệ thống tệp giúp bảo vệ dữ liệu bằng cách ghi lại các thay đổi trước  khi thực hiện, giúp phục hồi nhanh chóng khi có lỗi
+Các hệ thống hỗ trợ cơ chế này: EXT3, EXT4, NTFS
+Ưu điểm: giảm rủi ro mất dữ liệu, khôi phục nhanh hơn
+Nhược điểm: tốn tài nguyên và hiệu suất có thể bị giảm
+
+
+SLIDE 27
+Virtual File System là một thành phần quan trọng của HĐH, nhằm hỗ trợ HĐH quản lý được nhiều hệ thống tệp khác nhau như EXT4, NTFS, FAT32,…
+Hệ thống này cung cấp một giao diện chung cho ứng dụng truy cập tới tệp tin mà không cần biết chi tiết về hệ thống tệp.
+Hỗ trợ mở rộng, cho phép them các hệ thống tệp mới mà không ảnh hưởng tới hệ thống tệp hiện có
+
+SLIDE 30:
+Về tốc độ: 
+Tệp tin nhỏ => xử lý các tệp nhanh, nếu có quá nhiều tệp tin nhỏ => hệ thống phải truy xuất từng tệp có thể độ trễ cao => Chậm
+Tệp tin lớn:  khi truyền tệp lớn hiệu suất truy cập đĩa cao hơn, tuy nhiên có thể gặp hiện tượng tắc nghẽn khi truyền.
+
+Tệp tin nhỏ => các tệp vẫn phải chiếm đủ block size được cấp phát bởi HĐH, do vậy nếu HĐH sử dụng block size quá lớn => Hiệu quả sử dụng đĩa thấp (vì lãng phí nhiều vùng trống)
+Tệp tin lớn => làm giảm vùng trống dư thừa, tuy nhiên cũng có thể dẫn tới hiện tượng phân mảnh đĩa lớn khi xóa các tệp tin
+
+SLIDE 31
+Hai phương pháp cơ bản để quản lý các khối trống trên đĩa là
++ Vector bitmap
++ Danh sách liên kết
+Phương pháp Vector bitmap: Sử dụng một vector có độ dài N để quản lý N khối trên đĩa, trong đó giá trị 0 – Block trống, 1 – Block đã sử dụng
+Ví dụ: Vector 16 bit: 1111000111111001 (các khối trống là: Block 5, 6, 7, 14, 15)
+Ưu điểm: đơn giản
+Nhược điểm: để tìm kiếm khối trống, HĐH cần quét để tìm tất cả các bit bằng 0
++ Không hiệu quả khi đĩa lớn (có nhiều block)
+2. Sử dụng danh sách liên kết: 
+Ưu điểm: Tiết kiệm không gian bộ nhớ (Chỉ cần lưu thông tin về khối trống)
++ Giảm phân mảnh nội (sử dụng cấp phát bộ nhớ động => dễ dàng hợp nhất các khối trống)
+Nhược điểm:
++ Hiệu suất truy xuất đĩa có thể bị chậm (khi cần tìm khối trống phù hợp HĐH có thể phải duyệt qua danh sách gồm nhiều nút)
++ Cần thêm bộ nhớ cho con trỏ liên kết
++ Có thể dẫn đến phân mảnh ngoài
+
+Chú ý: Phân mảng nội là hiện tượng khi block nhớ được cấp phát lớn hơn dung lượng tiến trình/data cần lưu trữ (xảy ra khi sử dụng phương pháp cấp phát bộ nhớ cố định)
+Phân mảnh ngoài là hiện tượng có nhiều vùng nhớ nhỏ lẻ nhưng không đủ để sử dụng (thường xảy ra khi hệ thống cấp phát bộ nhớ theo các khối có kích thước thay đổi).
+
+SLIDE 33:
+
+Hạn ngạch đĩa:
+Hạn ngạch đĩa được sử dụng để cấp phát dung lượng đĩa cho người sử dụng
+Thường có hai loại hạn ngạch
+Hạn ngạch cứng: khi đã đến mức giới hạn thì người sử dụng không thể lưu trữ thêm dữ liệu lên thiết bị
+Soft quota: Cho phép người sử dụng có thể vượt mức giới hạn trong một khoảng xác định trước khi bị cảnh báo
+
+
+SLIDE 34:
+Backup file
+1. Khôi phục sau thảm họa: là quá trình khôi phục hệ thống sau các thảm họa như động đất, thiên tai,…. Mục tiêu của khôi phục này là đảm bảo cho các tổ chức có thể nhanh chóng hoạt động trở lại sau thiên tai.
++ Sao lưu dữ liệu
++ Sử dụng các trung tâm dữ liệu lớn
++ Hệ thống cloud
+2. Khôi phục sau những quyết định sai lầm
+
+SLIDE 35:
+Có thể backup theo các hình thức sau:
++ Full backup: sao lưu toàn bộ hệ thống tệp, đảm bảo tất cả các thư mục và tệp tin đều được sao lưu, bảo vệ
++ Incremental backup: chỉ sao lưu các tệp tin có thay đổi kể từ lần sao lưu trước
++ Differential backup: Sao lưu tất cả những thay đổi kể từ lần full backup gần nhất
+
+SLIDE 36:
++ Sử dụng một vector bitmap để biểu diễn trạng thái của các khối
++ Theo dõi các thay đổi của các block
++ Mỗi khi hệ thống tệp tin có sự thay đổi, các bit tương ứng sẽ được cập nhật
++ Hệ thống sẽ dựa vào các bit trong vector bitmap để thực hiện việc backup 
+
+SLIDE 37
++ Tính nhất quán trong các hệ thống tệp đảm bảo không xảy ra các hiện tượng có các khối dữ liệu bị sai lệch hoặc mất mát sau các thao tác ghi/xóa
++ Thường sử dụng các vector bitmap để quản lý tính nhất quán của hệ thống tệp
++ Mỗi bit sẽ biểu diễn một trạng thái của khối
+Ví dụ: hiện tượng miss block
+Used block: 00100101
+Free block : 11011010
+
+SLIDE 38
+Hiệu năng của hệ thống tệp
+Để tăng hiệu năng của các hệ thống tệp, có nhiều phương pháp khác nhau
+Sử dụng cấu trúc bảng băm và bộ nhớ đệm cache để tăng tốc độ xử lý
+
+
+
+
+
+
+
+
+
+
+
