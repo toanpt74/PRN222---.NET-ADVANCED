@@ -1,0 +1,301 @@
+SLIDE 4:
+Memory-Mapped I/O là một phương pháp truy cập thiết bị ngoại vi, trong đó vùng bộ nhớ của các thiết bị ngoại vi được ánh xạ vào không gian địa chỉ bộ nhớ của hệ thống
+Điều này cho phép CPU có thể truy cập vùng nhớ của TBNV thông qua các lệnh xử lý dữ liệu thông thường, thay vì phải sử dụng các lệnh I/O đặc biệt
+
+Hình a): Sử dụng không gian bộ nhớ chính và bộ nhớ cho các thiết bị ngoại vi độc lập
+b) Sử dụng phương pháp Memory Mapped I/O
+c) Kết hợp cả hai
+
+SLIDE 5
+Mô hình kiến trúc đơn bus và đa bus cho phối ghép TBNV
+
+
+SLIDE 6
+Truy cập bộ nhớ trực tiếp
+
+DMA: trong một số kiến trúc PC tiên tiến, bộ DMA giúp truy cập bộ nhớ nhanh hơn, giải phóng CPU để thực hiện các nhiệm vụ khác
+Cơ chế DMA cho phép hệ thống truy cập trực tiếp vào bộ nhớ, không cần tới CPU => Tăng tốc độ tính toán của hệ thống
+
+Bắt đầu quá trình DMA, CPU thiết lập quá trình truyền dữ liệu, sau đó chuyển quyền sử lý cho bộ xử lý DMA Controller, DMA Controller sẽ điều khiển quá trình truyền dữ liệu giữa bộ nhớ và TBNV
+
+Ưu điểm:
++ Giảm tải cho CPU
++ Tăng tốc độ truyền dữ liệu thông qua DMA Controller
++ Cải thiện hiệu suất của hệ thống
+
+
+SLIDE 7
+Ngắt:
+Ngắt là cơ chế quan trọng trong HĐH, cho phép phần cứng hoặc phần mềm tạm dừng hoạt động của CPU để thực hiện xử lý các sự kiện khác.
+Ngắt cứng và ngắt mềm
+1. Ngắt cứng: được kích hoạt bởi các thiết bị như bàn phím, con chuột, ổ đĩa,…
+Ví dụ khi bấm một phím => tạo ra một ngắt tới CPU
+2. Ngắt mềm: được tạo ra bởi các chương trình yêu cầu HĐH thực hiện một nhiệm vụ
+VD: Ứng dụng gọi HĐH để truy cập tệp tin thông qua gọi ngắt mềm
+3. Ngoại lệ: xảy ra khi CPU gặp lỗi, vid dụ chia cho số 0, hoặc truy cập vùng bộ nhớ không hợp lệ
+
+
+
+SLIDE 8
+Các hoạt động của ngắt
+Kích hoạt ngắt
+Xác định loại ngắt (CPU kiểm tra bộ điều khiển ngắt để biết thứ tự ưu tiên của ngắt)
+Lưu trạng thái hiện tại của chương trình (giá trị các thanh ghi, địa chỉ quay lại – PC)
+Chuyển điểu khiển tới Interrup Handler
+Xử lý ngắt: thực hiện chương trình con ngắt
+Khôi phục trạng thái và tiếp tục thực hiện chương trình
+
+
+SLIDE 9
+Thuật ngữ Precise và Imprecise để nói về các ngoại lệ chính xác và ngoại lệ không chính xác
+Precise Exception: một ngoại lệ được gọi là Precise Exception nếu thỏa mãn
++ Lưu trạng thái đúng (tất cả các lệnh trước lệnh gây ra ngoại lệ đã hoàn thành đúng cách)
++ Không có lệnh chưa thực thi
++ Quay lại điểm khởi đầu: CPU có thể quay lại chính xác vị trí gây lỗi và tiếp tục thực thi chương trình
+2. Imprecise Exception
+Một ngoại lệ gọi là Imprecise Exception nếu:
++ Lệnh sau lỗi có thể đã được thực hiện một phần
++ Không thể xác định chính xác vị trí lỗi
++ Khó khan trong việc khôi phục trạng thái
+Ví dụ: 
+
+SLIDE 10
+Các mục đích chính của phần mềm giao tiếp I/O
++ Giúp quản lý TBNV một cách độc lập, tăng khả năng tính toán CPU
++ Xử lý lỗi thuận tiện hơn
++ Hỗ trợ trao đổi đồng bộ hoặc bất đồng bộ
++ Hỗ trợ cơ chế bộ đêm buffer
+
+SLIDE 11
+Ví dụ khi sử dụng máy in để in tài liệu
++ Sử dụng bộ đệm để lưu trữ dữ liệu, trang in
+
+SLIDE 12
+Chương trình ghi xâu kí tự ra máy in sử dụng chương trình giao tiếp I/O
+
+
+SLIDE 16:
+Xử lý ngắt
+Lưu thanh ghi trạng thái chương trình PSW
+Thiết lập các ngữ cảnh cho chương trình con phục vụ ngắt
+Thiết lập ngăn xếp cho chương trình con ngắt
+Xác định ngắt (CPU xác định loại ngắt thông qua bảng vector phục vụ ngắt)
+Sao chép các thanh ghi đã lưu trữ vào bảng tiến trình (các giá trị của các thanh ghi được lưu vào một vùng nhớ cụ thể thuộc bảng tiến trình PCB – Process Control Block), bộ đếm chương trình PC cũng được lưu lại 
+	Các thông tin bộ nhớ Stack, Heap cũng có thể được lưu lại
+
+SLIDE 17
+6. Thực thi chương trình con phục vụ ngắt
+7. Chọn tiến trình tiếp theo
+8. Thiết lập MMU (Memory Management Unit):  khi xảy ra ngắt, HĐH chuẩn bị chuyển sang một tiến trình mới, nó cần đảm bảo MMU đã được cấu hình chính xác cho tiến trình đó
++ Lưu lại trạng thái MMU của tiến trình hiện tại
++ Tải thông tin bộ nhớ của tiến trình mới
++ Cấu hình MMU để ánh xạ đúng vùng bộ nhớ
++ Khôi phục các thanh ghi và tiếp tục thực thi tiến trình
+9. Nạp các thanh ghi của tiến trình và thanh ghi từ trạng thái chương trình PSW
+10. Thực thi tiến trình mới
+
+SLIDE 18
+
+Trình điều khiển thiết bị: Device Driver
+Trình điều khiển thiết bị là phần mềm giúp HĐH giao tiếp với các TBNV, nó đóng vai trò trung gian giữa HĐH và thiết bị, giúp các thiết bị hoạt động đúng cách mà không cần can thiệp quá chi tiết của HĐH
+Vai trò của Device Driver:
+Chuyển đổi lệnh từ HĐH: khi HĐH hoặc ứng dụng yêu cầu sử dụng thiết bị, trình điều khiển thiết bị sẽ chuyển đổi yêu cầu đó thành ngôn ngữ của thiết bị để thiết bị hiểu yêu cầu cần thực thi
+Gửi dữ liệu đến thiết bị: Trình điều khiển thiết bị giúp HĐH gửi dữ liệu đến thiết bị
+Xử lý các phản hồi từ thiết bị: khi thiết bị gửi dữ liệu trở lại, trình điều khiển thiết bị sẽ nhận thông tin đó và gửi lại cho HĐH
+
+SLIDE 19
+Các phần mềm I/O cho phép quản lý các giao tiếp nhập xuất I/O mà không phụ thuộc vào loại thiết bị cụ thể, mục tiêu là cung cấp một giao diện chung để HĐH có thể xử lý các thao tác I/O mà không phải quan tâm chi tiết đến thiết bị
+Mục đích:
+1. Giảm sự phụ thuộc vào thiết bị cụ thể
+2. Đơn giản hóa hệ thống
+3. Tăng tính linh hoạt của hệ thống
+
+Thông thường HĐH sử dụng một lớp trừu tượng  để giao tiếp với các thiết bị
+HĐH cung cấp các API chuẩn cho các thao tác I/O
+HĐH quản lý bộ đệm buffer và điều khiển lỗi
+Cấp phát và bảo vệ các tài nguyên I/O: quản lý quyền truy cập TBNV, tránh xung đột giữa các tiến trình
+Ánh xạ tên thiết bị với địa chỉ vật lý: ví dụ dev/printer
+
+SLIDE 20
+Uniform Interfacing for Device Drivers: là một phương pháp thiết kế nhằm tạo ra một giao diện chung duy nhất cho việc quản lý các TBNV
+Cách thiết kế này giúp cho HĐH có thể giao tiếp với nhiều loại thiết bị mà không cần quan tâm chi tiết đến từng thiết bị
+Cách tiếp cận này giúp:
+Tăng tính linh hoạt của hệ thống
+Giảm độ phức tạp
+Dễ mở rộng
+
+
+SLIDE 21
+Buffer: vùng nhớ đệm sử dụng cho các thiết bị
+Buffer giúp điều chỉnh tốc độ truyền dữ liệu: thông thường các TBNV thường có tốc độ truyền dữ liệu chậm hơn so với CPU  => Buffer giúp giảm thời gian chờ
+Tránh mất dữ liệu khi có nhiều yêu cầu đồng thời: khi có nhiều tiến trình cùng yêu cầu sử dụng một thiết bị, buffer giúp HĐH sắp xếp dữ liệu một cách hợp lý
+
+SLIDE 22
+Các hoạt động:
+1. Khi ghi dữ liệu vào thiết bị: HĐh lưu dữ liệu vào buffer trước khi gửi đến thiết bị, khi buffer đầy hoặc sau một khoảng thời gian xác định, HĐH sẽ chuyển dữ liệu từ Buffer ra thiết bị
+2. Khi đọc dữ liệu: dữ liệu từ TBNV cũng được lưu vào Buffer trước khi HĐH xử lý, điều này giúp HĐH có thể lấy được dữ liệu nhanh chóng, không phải chờ phản hồi từ thiết bị
+
+Có các loại Buffer:
+Single Buffer: dữ liệu được lưu vào vùng nhớ duy nhất, sau đó chuyển đến thiết bị
+Double Buffer: sử dụng hai buffer
+Circular Buffer: Buffer hoạt động theo cơ chế vòng trong, cho phép ghi và đọc dữ liệu liên tục
+
+SLIDE 23
+User-Space I/O Software: là phần mềm quản lý các hoạt động nhập xuất I/O, hệ thống sử dụng các thao tác nhập xuất trong user space thay vì trong kernel space
+Điều này giúp cải thiện hiệu suất tính toán, tang tính linh hoạt
+
+Kernel Space I/O: hoạt động trực tiếp trong HĐH, có quyền truy cập đầy đủ vào phần cứng
+User-space I/O: thực thi trong môi trường của người sử dụng và giao tiếp với kernel thông qua các system calls
+Mục tiêu của user space I/O là giảm sự phụ thuộc vào kernel, giúp tăng hiệu suất
+
+SLIDE 25
+Có thể chia đĩa thành nhiều sector, mỗi sector đều có dung lượng bằng nhau.
+Hình a) cách chia số sector trên các cung có thể khác nhau
+Hình b) các cung đều có cùng số sector
+
+
+SLIDE 26
+RAID là một công nghệ tích hợp nhiều đĩa từ thành một hệ thống để tăng hiệu suất, tính dự phòng và tính an toàn cho dữ liệu
++ Tăng tốc độ đọc/ghi bằng cách phối hợp dữ liệu giữa nhiều ổ đĩa
++ Cung cấp khả năng backup, an toàn dữ liệu
++ Tối ưu hóa không gian lưu trữ
+
+RAID 0: tăng tốc độ nhưng không bảo vệ dữ liệu
++ Dữ liệu được phân chia để lưu trữ trên nhiều thiết bị => Tăng tốc độ ghi/đọc
++ Không có cơ chế backup
+
+SLIDE 27
+RAID 1 (Mirroring): Sao lưu an toàn dữ liệu
++ Dữ liệu được lưu đồng thời trên nhiều thiết bị (có ổ đĩa là mirroring)
+Ưu điểm: đảm bảo an toàn dữ liệu, có thể khôi phục dữ liệu khi có 1 đĩa hỏng
+Nhược điểm: tốn dung lượng lưu trữ
+
+RAID 5: cân bằng giữa tốc độ lưu trữ và an toàn dữ liệu
+Dữ liệu được phân chia và có them parity để phục hồi dữ liệu
+Ưu điểm: tốc độ đọc nhanh, sử dụng dung lượng hiệu quả, đảm bảo an toàn dữ liệu
+Nhược điểm: Cần ít nhất 3 ổ đĩa, tốc độ ghi chậm hơn sơ với RAID 0
+RAID 6: Tăng cường dự phòng
+Tương tự như RAID 5, nhưng có hai lớp bảo vệ Parity
+Ưu điểm: khả năng chịu lỗi cao
+Nhược điểm: Cần ít nhất 4 ổ đĩa
+
+RAID 10 (RAID 1 + 0) : kết hợp RAID 0 và RAID 1, đảm bảo tốc độ và tính dự phòng
+
+SLIDE 29
+Trong HDD, dữ liệu được ghi trên các track (vòng tròn đồng tâm), tất cả các đường tròn có cùng bán kính gọi là Cylinder (từ trụ)
+Khi đầu đọc/ghi di chuyển giữa các track của cùng một cylinder cần một khoảng thời gian, gọi là seek time
+Cylinder skew điều chỉnh vị trí của các sector để đảm bảo khi đầu đọc hoàn thành một track và chuyển sang track kế tiếp, nó có thể đọc dữ liệu ngay mà không cần chờ vòng quay của đĩa
+
+SLIDE 30
+Interleave là một kỹ thuật tổ chức xen kẽ để tối ưu hiệu suất đọc/ghi dữ liệu trên đĩa từ, các sector được sắp xếp theo kỹ thuật xen kẽ để giảm thời gian chờ giữa các lần truy xuất
+
+Tăng hiệu suất truy xuất: Do các đĩa từ có tốc độ quay cố định, nếu dữ liệu được lưu trữ theo thứ liên tục, CPU có thể phải chờ lâu hơn để đọc dữ liệu tiếp theo.
+Với việc tổ chức xen kẽ thay vì đọc liên tiếp các sector là 1, 2, 3, 4,.. Hệ thống sẽ đọc các sector là  1-3-2-4 => Giúp CPU có đủ thời gian để xử lý thông tin trước khi đọc các sector tiếp theo
+
++ Nếu các sector tổ chức liên tục khi đó mỗi khi đọc dữ liệu trên các tệp tin được tổ chức liên tục có thể CPU phải chờ hết 1 vòng quay mới có thể đọc được sang sector tiếp theo
+
+  
+SLIDE 31
+Thuật toán lập lịch cho HDD
+
+Thời gian truy xuất đĩa từ gồm có 3 yếu tố chính
+Seek time: thời gian để di chuyển đầu từ về đúng track cần truy xuất data (1 – vài ms)
+Rotational delay: thời gian đĩa quay về đúng sector cần đọc (thời gian phụ thuộc vào tốc độ quay của đĩa từ: 5400 RPM/ 7200 RPM)
+Thời gian thực tế truyền dữ liệu từ đĩa từ vào bộ nhớ chính của PC (phụ thuộc vào tốc độ truyền của đĩa)
+
+SLIDE 34
+Xử lý lỗi trên đĩa từ
+Track có sector bad
+Thay thế sector dự phòng cho sector bad
+Dịch chuyển và bỏ qua tất cả các sector bad
+
+
+
+SLIDE 35
+Stable Storage là cơ chế lưu trữ dữ liệu an toàn trên thiết bị đĩa từ
+Đặc điểm:
+Bảo vệ dữ liệu trước lỗi:  Stable Storage đảm bảo dữ liệu luôn được lưu trữ an toàn, ngay cả khi mất điện hoặc các sự cố
+Cơ chế ghi kép (Redundant Storage):  dữ liệu được lưu trữ vào nhiều vị trí hoặc nhiều thiết bị
+Khả năng phục hồi (Recovery Mechanism): khi xảy ra lỗi, hệ thống có khả năng phục hồi dữ liệu từ các bản dự phòng
+
+SLIDE 36
+Cách thức hoạt động:
+Ghi dữ liệu vào hai bộ nhớ độc lập
+Kiểm tra tính toàn vẹn dữ liệu (sau khi ghi dữ liệu, hệ thống kiểm tra để đảm bảo dữ liệu đã được lưu ở hai vị trí đúng cách)
+Cơ chế phục hồi: hệ thống sẽ sử dụng phần còn lại để phục hồi khi dữ liệu có lỗi hoặc mất mát.
+
+SLIDE 37
+Clock Hardware là thiết bị phần cứng quan trọng trong hệ thống, giúp HĐH đồng bộ hóa các hoạt động của hệ thống và thực hiện các tác vụ quan trọng như lập lịch tiến trình, đo lường hiệu suất,…
+Có hai loại chính là
+Real-Time Clock (RTC): đồng hồ thời gian thực, được cấp nguồn liên tục bởi Pin CMOS
+Proprammable Interval Timer(PIT): được sử dụng để tạo ngắt, giúp HĐH thực hiện các tác vụ chia sẻ CPU giữa các tiến trình
+
+SLIDE 38
+Một số nhiệm vụ của Clock SoftWare
+Duy trì thời gian thực
+Chia sẻ CPU cho các tiến trình, ngăn chặn các tiến trình chiếm dụng tài nguyên quá lâu
+Tính toán và thống kê thời gian sử dụng CPU
+Xử lý các thông báo từ các tiến trình của người sử dụng
+Cung cấp đồng hồ thời gian thực
+Hỗ trợ giám sát, thống kê,…
+ 
+Watchdog timer là cơ chế phần cứng giúp giám sát và bảo vệ hệ thống khỏi bị treo hoặc hoạt động sai do lỗi phần mềm hoặc phần cứng.
+Cách hoạt động:
+Bộ đếm thời gian hoạt động bằng cách liên tục đếm lùi từ một giá trị đặt trước
+Khi hệ thống hoạt động bình thường, nó sẽ liên tục reset bộ đếm để ngăn bộ đếm lùi về giá trị 0
+Khi có lỗi: khi hệ thống có vấn đề không thể reset bộ đếm thì bộ đếm sẽ bị lùi về giá trị 0, và hệ thống sẽ kích hoạt các hành động để khắc phục sự cố
+
+SLIDE 39
+Các phương pháp duy trì thời gian:
+PP1: sử dụng 64 bit để lưu trữ các thông tin về thời gian
+Hệ thống có thể lưu trữ chính xác theo từng ms từ một mốc thời gian xác định (VD: 00:00:00 UTC MM/dd/yyyy)
+PP2: Sử dụng 32bit để lưu trữ các thông tin về thời gian trong ngày, có độ chính xác đến seconds, phần thứ hai được sử dụng để quản lý độ chính xác của bộ đếm thời gian theo giây
+Bộ định thời thường hoạt động với số lượng ticks dựa trên tần số xung nhịp của hệ thống
+VD timer 100 Hz => Mỗi giây có 100 ticks
+Timer 1 kHz => mỗi giây có 1.000 ticks
+
+PP3: hệ thống thời gian thực gồm có hai phần
++ Counter in ticks: dung để đo thời gian chính xác dựa trên tần số xung nhịp của hệ thống, mỗi ticks đại điện cho một khoảng thời gian xác định(ví dụ như 1 ms, hoặc 100 micro giây)
+Đơn vị này phụ thuộc vào tần số của bộ timer
++ Phần thứ hai là System Boot Timer: hệ thống cần lưu thời điểm khởi động để có thể đo lường khoảng thời gian đã trôi qua, phần này được sử dụng để giúp HĐH xác định được thời điểm bắt đầu chạy
+
+SLIDE 40
+Việc sử dụng một bộ định thời timer để mô phỏng nhiều bộ đếm thời gian là một kỹ thuật giúp HĐH có thể quản lý được nhiều tác vụ theo thời gian mà không cần phải tăng thêm các phần cứng timer
+Nguyên tăc hoạt động
+Lưu danh sách các timer với thời gian kích hoạt dự kiến
+Sử dụng một bộ đếm chính để tính toán và kích hoạt từng timer khi đến thời hạn
+Sử dụng thuật toán điều phối để xử lý các sự kiện của timer một cách hiệu quả
+
+PP này có ưu điểm không cần tăng thêm hardware, thường được sử dụng nhiều trong các hệ thống nhúng
+
+
+SLIDE 41
+Soft Timer: là một cơ chế phần mềm được sử dụng để quản lý thời gian mà không phụ thuộc trực tiếp và hardware,
+Nó hoạt động dựa trên bộ đếm thời gian chung của hệ thống và cho phép các tác vụ hoạt động theo thời gian đã lập lịch
+
+Soft Timer hoạt động dựa trên bộ đếm thời gian chung được duy trì bởi HĐH. Khi hệ thống cập nhật bộ đếm tick, nó sẽ kiểm tra danh sách các soft timer để xem timer nào đã hết hạn và thực hiện hành động
+Ví dụ: trong hệ thống nhúng để điều khiển đen led nháy theo chu kỳ
+
+SLIDE 44
+1. X Window System là một hệ thống được phát triển bởi MIT (1984), phiên bản phổ biến là X11, sử dụng cho Linux, Unix,  MacOS
+Chức năng chính là:
++ Cung cấp hệ thống giao diện cửa sổ cho các ứng dụng
++ Cho phép hiển thị từ xa
++ Hỗ trợ đa nhiệm và có thể custom giao diện
+2. Kiến trúc: X Window hoạt động theo mô hình Client/Server
+X-Server: quản lý màn hình, bàn phím, chuột và xử lý cac yêu cầu
+X-Client là các ứng dụng gửi yêu cầu về Server
+Giao thức X là giao thức giúp Client giao tiếp với Server, có thể hoạt động trên môi trường mạng
+
+
+SLIDE 45
+Drawing commands from program to workstation: Cung cấp các phương pháp để hiển thị đồ họa trên giao điện đầu cuối (Workstation)
++ X Client gửi lệnh vẽ
++ X Server nhận lệnh và thực hiện thao tác vẽ trên Workstation
+2. Replies by workstation to program queries: là tính năng cho phép Server phản hồi các yêu cầu từ Client, điều này cho phép các ứng dụng có thể lấy các thông tin từ Workstation như kích thước màn hình, trạng thái cửa sổ,…
+3. Keyboard, mouse, and other event announcements: cung cấp các sự kiện hỗ trợ tương tác ngươi sử dụng với các thiết bị ngoại vi như bàn phím, con chuột,…
+4. Error messages: hộ trợ quản lý lỗi, khi xảy ra lỗi như tài nguyên không có, lỗi cú pháp,.. X Server sẽ phản hồi về cho Client thông qua các message.
+
+
+
+
